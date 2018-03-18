@@ -3,7 +3,7 @@ import java.awt.Color;
 
 
 
-public class State {
+public class State implements Cloneable {
 	public static final int COLS = 10;
 	public static final int ROWS = 21;
 	public static final int N_PIECES = 7;
@@ -11,11 +11,12 @@ public class State {
 	
 
 	public boolean lost = false;
-	
-	
-	
 
-	
+
+	public Object clone()throws CloneNotSupportedException{
+		return super.clone();
+	}
+
 	public TLabel label;
 	
 	//current turn
