@@ -1,3 +1,4 @@
+import java.util.Arrays;
 
 public class PlayerSkeleton {
 
@@ -7,9 +8,17 @@ public class PlayerSkeleton {
 		return 0;
 	}
 
+	public static final int COLS = 10;
+	public static final int ROWS = 21;
+	public static final int ORIENT = 0;
+	public static final int SLOT = 1;
+	public static final int N_PIECES = 7;
+
+	protected static int[][][] legalMoves = new int[N_PIECES][][];
+
 	private int[][] field = new int[ROWS][COLS];
 	private int[] top = new int[COLS];
-	private int[] pOrients = new int[];
+	//private int[] pOrients = new int[];
 	private int[][] pWidth = State.getpWidth();
 	private int[][] pHeight = State.getpHeight();
 	private int[][][] pBottom = State.getpBottom();
@@ -27,22 +36,22 @@ public class PlayerSkeleton {
 		return top;
 	}
 
-	public static int[] getpOrients() { return pOrients; }
+	//public static int[] getpOrients() { return pOrients; }
 
-	public static int[][] getpWidth() {
+	/* public static int[][] getpWidth() {
 		return pWidth;
-	}
+	} */
 
-	public static int[][] getpHeight() {
+	/* public static int[][] getpHeight() {
 		return pHeight;
-	}
+	} */
 
-	public static int[][][] getpBottom() {
+	/* public static int[][][] getpBottom() {
 		return pBottom;
-	}
+	} */
 
-	public static int[][][] getpTop() {
-		return pTop;
+	public int[] getpTop() {
+		return top;
 	}
 
 	public boolean hasLost() {
@@ -72,7 +81,6 @@ public class PlayerSkeleton {
 		Arrays.fill(this.top,0);
 	}
 
-	@Override
 	public boolean makeMove(int orient, int slot) {
 		turn++;
 		//height if the first column makes contact
