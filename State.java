@@ -14,7 +14,14 @@ public class State implements Cloneable {
 
 
 	public Object clone()throws CloneNotSupportedException{
-		return super.clone();
+		State clonedState = (State) super.clone();
+		clonedState.top = this.top.clone();
+		clonedState.field = this.field.clone();
+		clonedState.nextPiece = this.nextPiece;
+		clonedState.lost = this.lost;
+		clonedState.turn = this.turn;
+		clonedState.cleared = this.cleared;
+		return clonedState;
 	}
 
 	public TLabel label;
@@ -210,7 +217,7 @@ public class State implements Cloneable {
 			
 			//from bottom to top of brick
 			for(int h = height+pBottom[nextPiece][orient][i]; h < height+pTop[nextPiece][orient][i]; h++) {
-				field[h][i+slot] = turn;
+			    field[h][i+slot] = turn;
 			}
 		}
 		
