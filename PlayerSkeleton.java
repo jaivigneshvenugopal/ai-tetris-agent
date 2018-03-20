@@ -4,7 +4,7 @@ public class PlayerSkeleton {
 
 	//implement this function to have a working system
 	public int pickMove(State s, int[][] legalMoves) {
-
+		
 		return 0;
 	}
 
@@ -163,7 +163,7 @@ public class PlayerSkeleton {
 	public void makeMove(int[] move) {
 		makeMove(move[ORIENT],move[SLOT]);
 	}
-
+  
 	public static void main(String[] args) {
 		State s = new State();
 		new TFrame(s);
@@ -180,5 +180,5 @@ public class PlayerSkeleton {
 		}
 		System.out.println("You have completed "+s.getRowsCleared()+" rows.");
 	}
-
+	
 }
