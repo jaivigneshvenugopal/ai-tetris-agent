@@ -2,31 +2,44 @@
 public class PlayerSkeleton {
 
 	// another State object to simulate the moves before actually playing
-	private State simulator;
-	//implement this function to have a working system
-	public int pickMove(State s, int[][] legalMoves) {
+	private StateSimulator simulator;
 
-		// 1. simulate the move
-		// 2. for each move, calculate the utility
-		// 3. backtrack
-		// 3. play the actual move
-        System.out.println("next piece: " + s.nextPiece + " # legal moves =" + legalMoves.length);
-
-		return 0;
+	public PlayerSkeleton() {
+			simulator = new StateSimulator();
 	}
 
-	public void simulate(State s, int[][] legalMoves) {
+	//implement this function to have a working system
+	public int pickMove(State s, int[][] legalMoves) {
+		return getBestMoveBySimulation(s, legalMoves.length);
+	}
+
+	/**
+	 * @param actualState the actual state with which the game runs
+	 * @param moveChoices the legal moves allowed
+	 * @return the best move
+	 */
+	public int getBestMoveBySimulation(State actualState, int moveChoices) {
+		int bestMove = 0;
+		double bestUtility = -1;
+		simulator.setNextPiece(actualState.nextPiece); // synchronize the next piece
+		for (int currentMove = 0; currentMove < moveChoices; currentMove++) {
+			simulator.makeMove(currentMove);
+			double currentUtility = 0;
+			Heuristics.getInstance().getUtility(simulator);
+			if (currentUtility > bestUtility) {
+				bestMove = currentMove;
+				bestUtility = currentUtility;
+			}
+			simulator.resetMove();
+		}
+		simulator.markSimulationDoneWithCurrentPiece();
+		return bestMove;
 	}
 	
 	public static void main(String[] args) {
 		State s = new State();
 		new TFrame(s);
 		PlayerSkeleton p = new PlayerSkeleton();
-
-		// construct another State object used for simulation
-		p.simulator = new State();
-		// make it null since we don't need it
-		p.simulator.label = null;
 
 		while(!s.hasLost()) {
 			s.makeMove(p.pickMove(s,s.legalMoves()));
@@ -103,17 +116,3 @@ public class PlayerSkeleton {
 
 }
 
-//class StateSimulator extends State {
-//	public StateSimulator() {
-//		super();
-//		this.label = null;
-//	}
-//
-//	public void MakeMoveWithReset(int move) {
-//		this.makeMove(move);
-//		// need to backtrack
-//
-//
-//	}
-//
-//}
