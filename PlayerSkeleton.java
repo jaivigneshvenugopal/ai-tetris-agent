@@ -10,7 +10,11 @@ public class PlayerSkeleton {
 
 	//implement this function to have a working system
 	public int pickMove(State s, int[][] legalMoves) {
-		return getBestMoveBySimulation(s, legalMoves.length);
+		int moveToPlay = getBestMoveBySimulation(s, legalMoves.length);
+		System.out.println("Move to Play = " + moveToPlay);
+		simulator.makeMove(moveToPlay);
+		simulator.markSimulationDoneWithCurrentPiece();
+		return moveToPlay;
 	}
 
 	/**
@@ -20,19 +24,17 @@ public class PlayerSkeleton {
 	 */
 	public int getBestMoveBySimulation(State actualState, int moveChoices) {
 		int bestMove = 0;
-		double bestUtility = -1;
+		double bestUtility = Double.NEGATIVE_INFINITY;
 		simulator.setNextPiece(actualState.nextPiece); // synchronize the next piece
 		for (int currentMove = 0; currentMove < moveChoices; currentMove++) {
 			simulator.makeMove(currentMove);
-			double currentUtility = 0;
-			Heuristics.getInstance().getUtility(simulator);
+			double currentUtility = Heuristics.getInstance().getUtility(simulator);
 			if (currentUtility > bestUtility) {
 				bestMove = currentMove;
 				bestUtility = currentUtility;
 			}
 			simulator.resetMove();
 		}
-		simulator.markSimulationDoneWithCurrentPiece();
 		return bestMove;
 	}
 	

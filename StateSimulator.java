@@ -3,6 +3,7 @@ import java.util.Arrays;
 class StateSimulator extends State {
 	private int[][] copy_field = new int[State.ROWS][State.COLS];
 	private int[] copy_top = new int[State.COLS];
+	private int copy_nextPiece;
 	private boolean hasMadeMove = false;
 
 	public StateSimulator() {
@@ -12,7 +13,13 @@ class StateSimulator extends State {
 
 	@Override
 	public void makeMove(int move) {
-		assert(nextPiece != -1); // if this is the case, setNextPiece is not yet called
+		if (nextPiece == -1) // assertion must have -ea switch turned on in JVM
+			throw new IllegalArgumentException("next piece is set to -1");
+		copy_nextPiece = nextPiece;
+
+
+//		System.out.println("move = " + move + ", nextPiece = " + nextPiece);
+
 		/// save all the member variables
 		// irrelevant variables: turn, cleared, hasLost
 		copy_top = Arrays.copyOf(this.getTop(), State.COLS);
@@ -20,7 +27,6 @@ class StateSimulator extends State {
 
 		super.makeMove(move);
 		hasMadeMove = true;
-		nextPiece = -1; // -1 to indicate that it has yet to synchronize this variable with the actual state
 	}
 
 	public void setNextPiece(int nextPiece) {
@@ -41,8 +47,9 @@ class StateSimulator extends State {
 	public void resetMove() {
 		if (!hasMadeMove)
 			return;
-		System.arraycopy(copy_top, copy_top.length, this.getTop(), 0, this.getTop().length);
+		System.arraycopy(copy_top, 0, this.getTop(), 0, this.getTop().length);
 		copyField(copy_field, this.getField());
+		nextPiece = copy_nextPiece; // to revert back from random.int()
 		hasMadeMove = false;
 		this.lost = false;
 	}
