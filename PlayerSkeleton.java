@@ -194,7 +194,7 @@ public class PlayerSkeleton {
 	public void makeMove(int[] move) {
 		makeMove(move[ORIENT],move[SLOT]);
 	}
-
+  
 	public static void main(String[] args) {
 		State s = new State();
 		new TFrame(s);
