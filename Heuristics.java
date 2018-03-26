@@ -16,7 +16,7 @@ public class Heuristics {
 
     // object variables
     private double[] weights = {
-            -5, -2, -3, -4, -100000000
+        -30, -2, -3, -4, -100000000
     };
 
     /// array to store the values for each feature, later to be multiplied by weights
@@ -24,6 +24,14 @@ public class Heuristics {
 
     private Heuristics() {
         features = new int[NUM_FEATURES];
+    }
+
+    public void setWeights(double numHolesWeight, double heightDiffWeight, double maxHeightWeight, double rowsClearedWeight) {
+        weights[INDEX_NUMHOLES] = numHolesWeight;
+        weights[INDEX_HEIGHT_DIFF] = heightDiffWeight;
+        weights[INDEX_MAX_HEIGHT] = maxHeightWeight;
+        weights[INDEX_ROWS_CLEARED] = rowsClearedWeight;
+        weights[INDEX_LOST] = -100000000;
     }
 
     public static Heuristics getInstance() {
