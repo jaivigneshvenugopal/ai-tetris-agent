@@ -16,15 +16,9 @@ public class Cuckoo {
     Solution randomExistingSolution;
     Solution currentBestSolution;
 
-    int COE_NUM_HOLES = -30;
-    int COE_HEIGHT_DIFF= -6;
-    int COE_MAX_HEIGHT = -5;
-    int COE_ROWS_CLEARED = -6;
-
-
     public Cuckoo() {
         N_NESTS = 15;
-        N_OPTIMIZATIONS = 10;
+        N_OPTIMIZATIONS = 10000;
         DISCARD_RATIO = 0.1;
         currentBestSolution = new Solution();
         solutions = new ArrayList<>(15);
@@ -39,7 +33,8 @@ public class Cuckoo {
     }
 
     public Solution getOptimumSolution() {
-        for (int nest = 0; nest < N_NESTS; nest++) {
+        solutions.add(new Solution());
+        for (int nest = 1; nest < N_NESTS; nest++) {
             Solution newSolution = generateNewSolution();
             solutions.add(nest, newSolution);
             if (newSolution.getUtility() > currentBestSolution.getUtility()) {
@@ -82,12 +77,13 @@ public class Cuckoo {
 
     public Solution getRandomExistingSolution() {
         Random rand = new Random();
-        int random = rand.nextInt(N_NESTS);
+        int random = rand.nextInt(solutions.size());
         return solutions.get(random);
     }
 
     public void discardSolutions() {
         Collections.sort(solutions, Collections.reverseOrder());
+        printCurrentBestUtility();
         int numOfDiscardedSolutions = (int) (DISCARD_RATIO * N_NESTS);
         int numOfExistingSolutions = N_NESTS - numOfDiscardedSolutions;
         for (int nest = numOfExistingSolutions; nest < N_NESTS; nest++) {
@@ -96,36 +92,30 @@ public class Cuckoo {
         }
     }
 
+    public void printCurrentBestUtility() {
+        ArrayList<Double> utilityValues = new ArrayList<>(15);
+        for (int i = 0 ; i < solutions.size(); i++) {
+            utilityValues.add(solutions.get(i).getUtility());
+        }
+        System.out.println(utilityValues);
+    }
     public Solution generateNewSolution() {
 
-        Random rand = new Random();
-        double value = rand.nextDouble();
-        if(value < 0.125) {
-            COE_NUM_HOLES++;
-        }
-        else if (value < 0.25) {
-            COE_NUM_HOLES--;
-        }
-        else if (value <0.375) {
-            COE_HEIGHT_DIFF++;
-        }
-        else if (value < 0.5) {
-            COE_HEIGHT_DIFF--;
-        }
-        else if (value < 0.625) {
-            COE_MAX_HEIGHT++;
-        }
-        else if (value < 0.75) {
-            COE_MAX_HEIGHT--;
-        }
-        else if (value < 0.875) {
-            COE_ROWS_CLEARED++;
-        }
-        else {
-            COE_ROWS_CLEARED--;
-        }
+        LevyDistribution levyDistribution = new LevyDistribution();
 
-        Solution newSolution = new Solution(COE_NUM_HOLES, COE_HEIGHT_DIFF, COE_MAX_HEIGHT, COE_ROWS_CLEARED);
+        double steps1 = levyDistribution.sample(2.0);
+        double steps2 = levyDistribution.sample(2.0);
+        double steps3 = levyDistribution.sample(2.0);
+        double steps4 = levyDistribution.sample(2.0);
+
+        Solution randomExistingSolution = getRandomExistingSolution();
+
+        double newNumHoles = (int) steps1 + randomExistingSolution.COE_NUM_HOLES;
+        double newHeightDiff = (int) steps2 + randomExistingSolution.COE_HEIGHT_DIFF;
+        double newMaxHeight = (int) steps3 + randomExistingSolution.COE_MAX_HEIGHT;
+        double newRowsCleared = (int) steps4 + randomExistingSolution.COE_ROWS_CLEARED;
+
+        Solution newSolution = new Solution(newNumHoles, newHeightDiff, newMaxHeight, newRowsCleared);
         newSolution.calculateUtility();
 
         return newSolution;
@@ -141,21 +131,21 @@ class Solution implements Comparable {
 
     private boolean DEBUG = true;
 
-    private int COE_NUM_HOLES;
-    private int COE_HEIGHT_DIFF;
-    private int COE_MAX_HEIGHT;
-    private int COE_ROWS_CLEARED;
+    public double COE_NUM_HOLES;
+    public double COE_HEIGHT_DIFF;
+    public double COE_MAX_HEIGHT;
+    public double COE_ROWS_CLEARED;
     private double UTILITY;
 
     public Solution() {
-        COE_NUM_HOLES = -30;
-        COE_HEIGHT_DIFF = -2;
-        COE_MAX_HEIGHT = -3;
-        COE_ROWS_CLEARED = -4;
-        UTILITY = 50;
+        COE_NUM_HOLES = 0;
+        COE_HEIGHT_DIFF = 0;
+        COE_MAX_HEIGHT = 0;
+        COE_ROWS_CLEARED = 0;
+        UTILITY = 0;
     }
 
-    public Solution(int COE_NUM_HOLES, int COE_HEIGHT_DIFF, int COE_MAX_HEIGHT, int COE_ROWS_CLEARED) {
+    public Solution(double COE_NUM_HOLES, double COE_HEIGHT_DIFF, double COE_MAX_HEIGHT, double COE_ROWS_CLEARED) {
         this.COE_NUM_HOLES = COE_NUM_HOLES;
         this.COE_HEIGHT_DIFF = COE_HEIGHT_DIFF;
         this.COE_MAX_HEIGHT = COE_MAX_HEIGHT;

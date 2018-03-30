@@ -142,18 +142,18 @@ public class PlayerSkeleton {
 
 	public static int run() {
 		State s = new State();
-		new TFrame(s);
+		//new TFrame(s);
 		PlayerSkeleton p = new PlayerSkeleton();
 
 		while(!s.hasLost()) {
 			s.makeMove(p.pickMove(s,s.legalMoves()));
-			s.draw();
-			s.drawNext(0,0);
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+//			s.draw();
+//			s.drawNext(0,0);
+//			try {
+//				Thread.sleep(1);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 		}
 		System.out.println("You have completed "+s.getRowsCleared()+" rows.");
 		return s.getRowsCleared();
