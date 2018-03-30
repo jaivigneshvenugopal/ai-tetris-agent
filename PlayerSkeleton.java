@@ -12,7 +12,6 @@ public class PlayerSkeleton {
 	//implement this function to have a working system
 	public int pickMove(State s, int[][] legalMoves) {
 		int moveToPlay = getBestMoveBySimulation(s, legalMoves.length);
-		System.out.println("Move to Play = " + moveToPlay);
 		simulator.makeMove(moveToPlay);
 		simulator.markSimulationDoneWithCurrentPiece();
 		return moveToPlay;
@@ -49,7 +48,6 @@ public class PlayerSkeleton {
 
 	private int[][] field = new int[ROWS][COLS];
 	private int[] top = new int[COLS];
-	//private int[] pOrients = new int[];
 	private int[][] pWidth = State.getpWidth();
 	private int[][] pHeight = State.getpHeight();
 	private int[][][] pBottom = State.getpBottom();
@@ -58,59 +56,6 @@ public class PlayerSkeleton {
 	private int turn = 0;
 	private boolean lost;
 	private int cleared = 0;
-
-	public int[][] getField() {
-		return field;
-	}
-
-	public int[] getTop() {
-		return top;
-	}
-
-	//public static int[] getpOrients() { return pOrients; }
-
-	/* public static int[][] getpWidth() {
-		return pWidth;
-	} */
-
-	/* public static int[][] getpHeight() {
-		return pHeight;
-	} */
-
-	/* public static int[][][] getpBottom() {
-		return pBottom;
-	} */
-
-	public int[] getpTop() {
-		return top;
-	}
-
-	public boolean hasLost() {
-		return lost;
-	}
-
-	public int getRowsCleared() {
-		return cleared;
-	}
-
-	public int getTurnNumber() {
-		return turn;
-	}
-
-	public int getNextPiece() {
-		return nextPiece;
-	}
-
-	public void setNextPiece(int nextPiece) { this.nextPiece = nextPiece; }
-
-	public void resetState(State state) {
-		int[][] field = state.getField();
-		int stateNextPiece = state.getNextPiece();
-		boolean stateLost = state.hasLost();
-		int stateCleared = state.getRowsCleared();
-		int stateTurn = state.getTurnNumber();
-		Arrays.fill(this.top,0);
-	}
 
 	public boolean makeMove(int orient, int slot) {
 		turn++;
@@ -194,24 +139,6 @@ public class PlayerSkeleton {
 	public void makeMove(int[] move) {
 		makeMove(move[ORIENT],move[SLOT]);
 	}
-  
-	public static void main(String[] args) {
-		State s = new State();
-		new TFrame(s);
-		PlayerSkeleton p = new PlayerSkeleton();
-
-		while(!s.hasLost()) {
-			s.makeMove(p.pickMove(s,s.legalMoves()));
-			s.draw();
-			s.drawNext(0,0);
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		System.out.println("You have completed "+s.getRowsCleared()+" rows.");
-	}
 
 	public static int run() {
 		State s = new State();
@@ -230,66 +157,6 @@ public class PlayerSkeleton {
 		}
 		System.out.println("You have completed "+s.getRowsCleared()+" rows.");
 		return s.getRowsCleared();
-	}
-
-	/// features
-
-	/**
-	 *
-	 * @param s: represents the state of the game
-	 * @return number of holes in the field
-	 */
-	public static int numHoles(State s) {
-		int[] topRow = s.getTop();
-		int[][] field = s.getField();
-		int numHoles = 0;
-		boolean hasHole;
-		for (int col = 0; col < State.COLS; col++) {
-			// for each column, find if there is a hole
-			hasHole = false;
-			int topCell = topRow[col] - 1; // since s.getTop() contains topRow + 1
-			for (int row = topCell-1; row > 0; row--) {
-				if (field[row][col] == 0) {
-					hasHole = true;
-					break;
-				}
-			}
-
-			if (hasHole) { // if this column has a hole
-				numHoles++;
-			}
-		}
-
-		return numHoles;
-	}
-
-	/**
-	 *
-	 * @param s: State
-	 * @return sum of total height difference between neighbouring columns abs(height(k) - height(k+1))
-	 */
-	public static int heightDiff(State s) {
-		int[] topRow = s.getTop(); // no need to minus 1 since it gets cancelled
-		int totalHeightDiff = 0;
-		for (int currentCol = 0; currentCol < topRow.length-1; currentCol++) {
-			int nextCol = currentCol+1;
-			totalHeightDiff += Math.abs(currentCol - nextCol);
-		}
-		return totalHeightDiff;
-	}
-
-
-	/**
-	 *
-	 * @param s: State
-	 * @return the maximum height among all the columns
-	 */
-	public static int maxHeight(State s) {
-		int maxHeight = -1;
-		for (int top: s.getTop()) {
-			maxHeight = Math.max(maxHeight, top-1);
-		}
-		return maxHeight;
 	}
 
 }

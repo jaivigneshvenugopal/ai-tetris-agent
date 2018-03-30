@@ -2,21 +2,20 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 
 public class Heuristics {
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
     private static int index = 0;
-    public static final int NUM_FEATURES = 5;
+    public static final int NUM_FEATURES = 4;
 
     public static final int INDEX_NUMHOLES = index++;
     public static final int INDEX_HEIGHT_DIFF = index++;
     public static final int INDEX_MAX_HEIGHT = index++;
     public static final int INDEX_ROWS_CLEARED = index++;
-    public static final int INDEX_LOST = index++;
 
     private static Heuristics instance;
 
     // object variables
-    private double[] weights = {
-        -30, -2, -3, -4, -100000000
+    private static double[] weights = {
+        -30, -2, -3, -4
     };
 
     /// array to store the values for each feature, later to be multiplied by weights
@@ -26,12 +25,11 @@ public class Heuristics {
         features = new int[NUM_FEATURES];
     }
 
-    public void setWeights(double numHolesWeight, double heightDiffWeight, double maxHeightWeight, double rowsClearedWeight) {
+    public static void setWeights(double numHolesWeight, double heightDiffWeight, double maxHeightWeight, double rowsClearedWeight) {
         weights[INDEX_NUMHOLES] = numHolesWeight;
         weights[INDEX_HEIGHT_DIFF] = heightDiffWeight;
         weights[INDEX_MAX_HEIGHT] = maxHeightWeight;
         weights[INDEX_ROWS_CLEARED] = rowsClearedWeight;
-        weights[INDEX_LOST] = -100000000;
     }
 
     public static Heuristics getInstance() {
@@ -45,7 +43,6 @@ public class Heuristics {
         features[INDEX_HEIGHT_DIFF] = feature_getHeightDiff(s);
         features[INDEX_MAX_HEIGHT] = feature_getMaxHeight(s);
         features[INDEX_ROWS_CLEARED] = s.getRowsCleared();
-        features[INDEX_LOST] = s.hasLost() ? 1: 0;
 
         double utility = 0;
         for (int i = 0; i < NUM_FEATURES; i++){
