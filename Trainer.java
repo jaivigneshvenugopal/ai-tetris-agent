@@ -1,5 +1,5 @@
 /**
- * Created by hyma on 26/3/18.
+ * This is the main program for this project, as of now.
  */
 public class Trainer {
 
