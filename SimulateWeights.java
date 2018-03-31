@@ -22,7 +22,7 @@ public class SimulateWeights {
         System.out.println("---------------------------");
         int sum = 0;
         for (int i = 0; i < 100; i++) {
-            sum += simulateConfiguration(-19, -4, 0, 3);
+            sum += simulateConfiguration(-30, -2, -3, -4);
         }
         System.out.println("Avr is " + sum/100.0);
         System.out.println("---------------------------");

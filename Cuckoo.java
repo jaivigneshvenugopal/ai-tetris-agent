@@ -1,3 +1,4 @@
+import javax.swing.plaf.synth.SynthEditorPaneUI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -6,9 +7,12 @@ public class Cuckoo {
 
     private boolean DEBUG = true;
 
+
     protected final int N_NESTS;					//number of nests (solutions)
     protected final int N_OPTIMIZATIONS;			//number of generations
     protected final double DISCARD_RATIO;		    //ratio of worst solutions discarded
+
+    int notableSizeofSolutionSet = 0;
 
     ArrayList<Solution> solutions;
 
@@ -20,7 +24,7 @@ public class Cuckoo {
 
     public Cuckoo() {
         N_NESTS = 15;
-        N_OPTIMIZATIONS = 1000;
+        N_OPTIMIZATIONS = 10000;
         DISCARD_RATIO = 0.5;
         currentBestSolution = new Solution();
         solutions = new ArrayList<>(15);
@@ -38,11 +42,13 @@ public class Cuckoo {
     public Solution getOptimumSolution() {
         //Add first default solution defined by programmer
         solutions.add(new Solution());
+        notableSizeofSolutionSet++;
 
         //Generate rest of the nests using the first default solution
         for (int nest = 1; nest < N_NESTS; nest++) {
-            Solution newSolution = generateNewSolution();
+            Solution newSolution = generateNewSolution(notableSizeofSolutionSet);
             solutions.add(nest, newSolution);
+            notableSizeofSolutionSet++;
 
             //Constantly checking if any of the new solution is better than the current best
             if (newSolution.getPerformanceMeasure() > currentBestSolution.getPerformanceMeasure()) {
@@ -60,8 +66,10 @@ public class Cuckoo {
                 System.out.println("Init new solution, to replace one of 15");
             }
 
-            newSolution = generateNewSolution();
-            randomExistingSolution = getRandomExistingSolution();
+            System.out.println("-------------------ALGO IS AT ITERATION " + iterations + " ---------------------------");
+
+            newSolution = generateNewSolution(notableSizeofSolutionSet);
+            randomExistingSolution = getRandomExistingSolution(notableSizeofSolutionSet);
 
             //If new solution is better than any of the random existing solution in any of the nests, it replaces it
             if (newSolution.getPerformanceMeasure() > randomExistingSolution.getPerformanceMeasure()) {
@@ -79,6 +87,7 @@ public class Cuckoo {
                     currentBestSolution = newSolution;
                 }
             }
+
             if (DEBUG) {
                 System.out.println("Discarding solutions now");
             }
@@ -91,26 +100,30 @@ public class Cuckoo {
     }
 
     //Returns a random solution from the current solution set
-    public Solution getRandomExistingSolution() {
+    public Solution getRandomExistingSolution(int notableSizeofSolutionSet) {
         Random rand = new Random();
-        int random = rand.nextInt(solutions.size());
+        int random = rand.nextInt(notableSizeofSolutionSet);
         return solutions.get(random);
     }
 
     //Removes the nests with poor performance. It then regenerates new solutions based on the current best solutions in the solution set
     public void discardSolutions() {
         //Sort in descending order
-        Collections.sort(solutions, Collections.reverseOrder());
+        Collections.sort(solutions);
+        Collections.reverse(solutions);
 
         printCurrentBestPerformanceMeasure();
+
         int numOfDiscardedSolutions = (int) (DISCARD_RATIO * N_NESTS);
-        int numOfExistingSolutions = N_NESTS - numOfDiscardedSolutions;
+        notableSizeofSolutionSet = N_NESTS - numOfDiscardedSolutions;
 
         //Regenerates solutions for empty slots
-        for (int nest = numOfExistingSolutions; nest < N_NESTS; nest++) {
-            Solution newSolution = generateNewSolution();
+        for (int nest = numOfDiscardedSolutions; nest < N_NESTS; nest++) {
+            Solution newSolution = generateNewSolution(notableSizeofSolutionSet);
             solutions.set(nest, newSolution);
         }
+
+        notableSizeofSolutionSet = N_NESTS;
     }
 
     //Print current solution set, for debugging purpose
@@ -119,19 +132,33 @@ public class Cuckoo {
         for (int i = 0 ; i < solutions.size(); i++) {
             performanceMeasureValues.add(solutions.get(i).getPerformanceMeasure());
         }
-        System.out.println(performanceMeasureValues);
+        System.out.println("performance measure values : " + performanceMeasureValues);
     }
 
-    public Solution generateNewSolution() {
+    public Solution generateNewSolution(int notableSizeofSolutionSet) {
 
         double levySteps = levyDistribution.sample(2.0);
 
-        Solution randomExistingSolution = getRandomExistingSolution();
+        Solution randomExistingSolution = getRandomExistingSolution(notableSizeofSolutionSet);
 
-        double newNumHoles = levySteps + randomExistingSolution.COE_NUM_HOLES;
-        double newHeightDiff = levySteps + randomExistingSolution.COE_HEIGHT_DIFF;
-        double newMaxHeight = levySteps + randomExistingSolution.COE_MAX_HEIGHT;
-        double newRowsCleared = levySteps + randomExistingSolution.COE_ROWS_CLEARED;
+        Random randomGenerator = new Random();
+        int randNum = randomGenerator.nextInt(4);
+
+        double newNumHoles = randomExistingSolution.COE_NUM_HOLES;
+        double newHeightDiff = randomExistingSolution.COE_HEIGHT_DIFF;
+        double newMaxHeight = randomExistingSolution.COE_MAX_HEIGHT;
+        double newRowsCleared = randomExistingSolution.COE_ROWS_CLEARED;
+
+        switch (randNum) {
+            case 0: newNumHoles += levySteps;
+                    break;
+            case 1: newHeightDiff += levySteps;
+                    break;
+            case 2: newMaxHeight += levySteps;
+                    break;
+            case 3: newRowsCleared += levySteps;
+                    break;
+        }
 
         Solution newSolution = new Solution(newNumHoles, newHeightDiff, newMaxHeight, newRowsCleared);
         newSolution.calculatePerformanceMeasure();
@@ -147,7 +174,7 @@ public class Cuckoo {
 
 class Solution implements Comparable {
 
-    private boolean DEBUG = true;
+    private boolean DEBUG = false;
 
     public double COE_NUM_HOLES;
     public double COE_HEIGHT_DIFF;
@@ -156,11 +183,11 @@ class Solution implements Comparable {
     private double PERFORMANCE_MEASURE;
 
     public Solution() {
-        COE_NUM_HOLES = -19;
-        COE_HEIGHT_DIFF = -4;
-        COE_MAX_HEIGHT = 0;
-        COE_ROWS_CLEARED = 3;
-        PERFORMANCE_MEASURE = 500;
+        COE_NUM_HOLES = -30;
+        COE_HEIGHT_DIFF = -2;
+        COE_MAX_HEIGHT = -3;
+        COE_ROWS_CLEARED = -4;
+        PERFORMANCE_MEASURE = 123;
     }
 
     public Solution(double COE_NUM_HOLES, double COE_HEIGHT_DIFF, double COE_MAX_HEIGHT, double COE_ROWS_CLEARED) {
@@ -172,15 +199,16 @@ class Solution implements Comparable {
 
     public void calculatePerformanceMeasure() {
         Heuristics.setWeights(COE_NUM_HOLES, COE_HEIGHT_DIFF, COE_MAX_HEIGHT, COE_ROWS_CLEARED);
+        System.out.println("CURRENT CONFIG IN TEST: " + "[" + COE_NUM_HOLES + ", " + COE_HEIGHT_DIFF + ", " + COE_MAX_HEIGHT + ", " + COE_ROWS_CLEARED + "]");
         PlayerSkeleton player = new PlayerSkeleton();
         int sumFitness = 0;
         for (int i = 0; i < 100; i++) {
             sumFitness += player.run();
         }
-        if (DEBUG) {
-            System.out.println("Calculating total performance value is : " + sumFitness);
-        }
+
         PERFORMANCE_MEASURE = sumFitness/100.0;
+
+        System.out.println("Calculating performance value : " + PERFORMANCE_MEASURE);
     }
 
     public double getPerformanceMeasure() {
@@ -188,7 +216,16 @@ class Solution implements Comparable {
     }
 
     public int compareTo(Object solution) {
-        return (int) (this.PERFORMANCE_MEASURE - ((Solution)solution).PERFORMANCE_MEASURE);
+        double difference = this.PERFORMANCE_MEASURE - ((Solution)solution).PERFORMANCE_MEASURE;
+        if (difference > 0) {
+            return 1;
+        }
+        else if (difference < 0) {
+            return -1;
+        }
+        else {
+            return 0;
+        }
     }
 
     @Override

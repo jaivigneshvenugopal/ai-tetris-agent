@@ -28,7 +28,7 @@ public class PlayerSkeleton {
 		simulator.setNextPiece(actualState.nextPiece); // synchronize the next piece
 		for (int currentMove = 0; currentMove < moveChoices; currentMove++) {
 			simulator.makeMove(currentMove);
-			double currentUtility = Heuristics.getInstance().getUtility(simulator);
+			double currentUtility = Heuristics.getInstance().getUtility(simulator, actualState);
 			if (currentUtility > bestUtility) {
 				bestMove = currentMove;
 				bestUtility = currentUtility;
@@ -53,7 +53,7 @@ public class PlayerSkeleton {
 //				e.printStackTrace();
 //			}
 		}
-		System.out.println("You have completed "+s.getRowsCleared()+" rows.");
+		//System.out.println("You have completed "+s.getRowsCleared()+" rows.");
 		return s.getRowsCleared();
 	}
 

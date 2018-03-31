@@ -38,17 +38,21 @@ public class Heuristics {
         return instance;
     }
 
-    public double getUtility(State s) {
-        features[INDEX_NUMHOLES] = feature_getNumHoles(s);
-        features[INDEX_HEIGHT_DIFF] = feature_getHeightDiff(s);
-        features[INDEX_MAX_HEIGHT] = feature_getMaxHeight(s);
-        features[INDEX_ROWS_CLEARED] = s.getRowsCleared();
+    public double getUtility(State modifiedState, State actualState) {
+        features[INDEX_NUMHOLES] = feature_getNumHoles(modifiedState);
+        features[INDEX_HEIGHT_DIFF] = feature_getHeightDiff(modifiedState);
+        features[INDEX_MAX_HEIGHT] = feature_getMaxHeight(modifiedState);
+        features[INDEX_ROWS_CLEARED] = feature_getRowsCleared(modifiedState, actualState);
 
         double utility = 0;
         for (int i = 0; i < NUM_FEATURES; i++){
             utility += features[i] * weights[i];
         }
         return utility;
+    }
+
+    private int feature_getRowsCleared(State modifiedState, State actualState) {
+        return actualState.getRowsCleared() - modifiedState.getRowsCleared();
     }
 
     private int feature_getNumHoles(State s) {
