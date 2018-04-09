@@ -3,6 +3,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
+
+/*Version 1 of Cuckoo*/
+//Levy steps is only applied to one of the 4 weights
+
 public class Cuckoo {
 
     private boolean DEBUG = true;
@@ -41,7 +45,7 @@ public class Cuckoo {
 
     public Solution getOptimumSolution() {
         //Add first default solution defined by programmer
-        solutions.add(generateInitialNewSolution());
+        solutions.add(new Solution());
         notableSizeofSolutionSet++;
 
         //Generate rest of the nests using the first default solution
@@ -136,10 +140,10 @@ public class Cuckoo {
     }
     public Solution generateInitialNewSolution() {
         Random randomGenerator = new Random();
-        int randNum1 = -randomGenerator.nextInt(1000);
-        int randNum2 = -randomGenerator.nextInt(1000);
-        int randNum3 = -randomGenerator.nextInt(1000);
-        int randNum4 = -randomGenerator.nextInt(1000);
+        int randNum1 = - randomGenerator.nextInt(1000);
+        int randNum2 = - randomGenerator.nextInt(1000);
+        int randNum3 = - randomGenerator.nextInt(1000);
+        int randNum4 = - randomGenerator.nextInt(1000);
 
         double newNumHoles = randNum1;
         double newHeightDiff = randNum2;
@@ -155,10 +159,10 @@ public class Cuckoo {
 
     public Solution generateNewSolution(int notableSizeofSolutionSet) {
 
-        double levySteps1 = 0 - levyDistribution.sample_positive(2.0, 5.0);
-        double levySteps2 = 0 - levyDistribution.sample_positive(2.0, 5.0);
-        double levySteps3 = 0 - levyDistribution.sample_positive(2.0, 5.0);
-        double levySteps4 = 0 - levyDistribution.sample_positive(2.0, 5.0);
+        double levySteps1 = - levyDistribution.sample_positive(2.0, 10.0);
+        double levySteps2 = - levyDistribution.sample_positive(2.0, 10.0);
+        double levySteps3 = - levyDistribution.sample_positive(2.0, 10.0);
+        double levySteps4 = - levyDistribution.sample_positive(2.0, 10.0);
 
         Solution randomExistingSolution = getRandomExistingSolution(notableSizeofSolutionSet);
 
@@ -171,8 +175,6 @@ public class Cuckoo {
         double newRowsCleared = randomExistingSolution.COE_ROWS_CLEARED;
         double gameLost = randomExistingSolution.COE_LOST;
 
-        double sumOfWeights = newNumHoles + newHeightDiff + newMaxHeight + newRowsCleared + gameLost;
-
         switch (randNum) {
             case 0: newNumHoles += levySteps1;
                     break;
@@ -182,36 +184,6 @@ public class Cuckoo {
                     break;
             case 3: newRowsCleared += levySteps4;
                     break;
-//            case 5: newNumHoles += levySteps1;
-//                    newHeightDiff += levySteps2;
-//                    break;
-//            case 6: newMaxHeight += levySteps3;
-//                    newRowsCleared += levySteps4;
-//                    break;
-//            case 7: gameLost += levySteps5;
-//                    newNumHoles += levySteps1;
-//                    break;
-//            case 8: newNumHoles += levySteps1;
-//                    newMaxHeight += levySteps3;
-//                    break;
-//            case 9: newHeightDiff += levySteps2;
-//                    newRowsCleared += levySteps4;
-//                    break;
-//            case 10:newMaxHeight += levySteps3;
-//                    gameLost += levySteps5;
-//                    break;
-//            case 11:newNumHoles += levySteps1;
-//                    newRowsCleared += levySteps4;
-//                    break;
-//            case 12:newNumHoles += levySteps1;
-//                    gameLost += levySteps5;
-//                    break;
-//            case 13:newHeightDiff += levySteps2;
-//                    newMaxHeight += levySteps3;
-//                    break;
-//            case 14:newHeightDiff += levySteps2;
-//                    gameLost += levySteps5;
-//                    break;
         }
 
         Solution newSolution = new Solution(newNumHoles, newHeightDiff, newMaxHeight, newRowsCleared, gameLost);
@@ -235,13 +207,6 @@ class Solution implements Comparable {
     public double COE_MAX_HEIGHT;
     public double COE_ROWS_CLEARED;
     public double COE_LOST;
-
-    public double NORMALISED_COE_NUM_HOLES;
-    public double NORMALISED_COE_HEIGHT_DIFF;
-    public double NORMALISED_COE_MAX_WEIGHT;
-    public double NORMALISED_COE_ROWS_CLEARED;
-    public double NORMALISED_COE_LOST;
-
     private double PERFORMANCE_MEASURE;
 
     public Solution() {
@@ -250,15 +215,6 @@ class Solution implements Comparable {
         COE_MAX_HEIGHT = -1.0959024670628437;
         COE_ROWS_CLEARED = -2.1909966104303704;
         COE_LOST = -10000000;
-
-        double sumOfWeights = COE_NUM_HOLES + COE_HEIGHT_DIFF + COE_MAX_HEIGHT + COE_ROWS_CLEARED + COE_LOST;
-
-        NORMALISED_COE_NUM_HOLES = COE_NUM_HOLES/sumOfWeights;
-        NORMALISED_COE_HEIGHT_DIFF = COE_HEIGHT_DIFF/sumOfWeights;
-        NORMALISED_COE_MAX_WEIGHT = COE_MAX_HEIGHT/sumOfWeights;
-        NORMALISED_COE_ROWS_CLEARED = COE_ROWS_CLEARED/sumOfWeights;
-        NORMALISED_COE_LOST = COE_LOST/sumOfWeights;
-
         PERFORMANCE_MEASURE = 600;
     }
 
