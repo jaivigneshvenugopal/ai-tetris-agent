@@ -55,7 +55,7 @@ public class Heuristics {
     }
 
     private int feature_getRowsCleared(State modifiedState, State actualState) {
-        return actualState.getRowsCleared() - modifiedState.getRowsCleared();
+        return modifiedState.getRowsCleared() - actualState.getRowsCleared();
     }
 
     private int feature_getNumHoles(State s) {

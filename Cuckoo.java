@@ -143,7 +143,7 @@ public class Cuckoo {
         int randNum1 = - randomGenerator.nextInt(1000);
         int randNum2 = - randomGenerator.nextInt(1000);
         int randNum3 = - randomGenerator.nextInt(1000);
-        int randNum4 = - randomGenerator.nextInt(1000);
+        int randNum4 = randomGenerator.nextInt(1000);
 
         double newNumHoles = randNum1;
         double newHeightDiff = randNum2;
@@ -162,7 +162,7 @@ public class Cuckoo {
         double levySteps1 = - levyDistribution.sample_positive(2.0, 10.0);
         double levySteps2 = - levyDistribution.sample_positive(2.0, 10.0);
         double levySteps3 = - levyDistribution.sample_positive(2.0, 10.0);
-        double levySteps4 = - levyDistribution.sample_positive(2.0, 10.0);
+        double levySteps4 = levyDistribution.sample_positive(2.0, 10.0);
 
         Solution randomExistingSolution = getRandomExistingSolution(notableSizeofSolutionSet);
 
@@ -213,7 +213,7 @@ class Solution implements Comparable {
         COE_NUM_HOLES = -29.964719027661793;
         COE_HEIGHT_DIFF = -6.822748171011885;
         COE_MAX_HEIGHT = -1.0959024670628437;
-        COE_ROWS_CLEARED = -2.1909966104303704;
+        COE_ROWS_CLEARED = 9.000000000000000;
         COE_LOST = -10000000;
         PERFORMANCE_MEASURE = 600;
     }
