@@ -3,35 +3,37 @@ import java.util.Scanner;
 public class PlayerSkeleton {
 
 	// another State object to simulate the moves before actually playing
-	protected StateSimulator sim;
+	protected StateSimulator2 sim;
 	private double[] weights;
-	private static final boolean DEBUG_FEATURES = true;
+	private static final boolean DEBUG_FEATURES = false;
 
 	private static Scanner sc = new Scanner(System.in);
 
 	public PlayerSkeleton() {
-			sim = new StateSimulator();
+		sim = new StateSimulator2();
 	}
 
 	//implement this function to have a working system
 	public int pickMove(State s, int[][] legalMoves) {
-		int moveToPlay = getBestMoveBySimulation(s, legalMoves.length);
-		this.sim.makeMove(moveToPlay); // update it since you do end up making this move
-		this.sim.markSimulationDoneWithCurrentPiece();
-		return moveToPlay;
+
+		int bestMove = getBestMoveBySimulation(s, legalMoves.length);
+		if (DEBUG_FEATURES) {
+			sim.copyState(s);
+			sim.makeMove(bestMove);
+		}
+		return bestMove;
 	}
 
 	/**
 	 * @param actualState the actual state with which the game runs
-	 * @param moveChoices the legal moves allowed
+	 * @param numMoves the legal moves allowed
 	 * @return the best move
 	 */
-	private int getBestMoveBySimulation(State actualState, int moveChoices) {
+	private int getBestMoveBySimulation(State actualState, int numMoves) {
 		int bestMove = 0;
 		double bestUtility = Double.NEGATIVE_INFINITY;
-		sim.setNextPiece(actualState.nextPiece); // synchronize the next piece
-		for (int currentMove = 0; currentMove < moveChoices; currentMove++) {
-			double currentUtility = getUtility(sim, currentMove);
+		for (int currentMove = 0; currentMove < numMoves; currentMove++) {
+			double currentUtility = getUtility(actualState, currentMove);
 			if (currentUtility > bestUtility) {
 				bestMove = currentMove;
 				bestUtility = currentUtility;
@@ -39,12 +41,12 @@ public class PlayerSkeleton {
 		}
 		return bestMove;
 	}
-	
+
 	public static void main(String[] args) {
 		State state = new State();
 		new TFrame(state);
 		PlayerSkeleton p = new PlayerSkeleton();
-		double[] sampleWeight = {-0.01, -0.02, -0.03, -0.05, -0.3, -0.1, -0.3, -0.5};
+		double[] sampleWeight = { -3.06963462 , -8.38935298 , -6.85516551 , -8.72881560 , -4.45039098 , -7.36354452 , -6.63494222 , -9.56366090};
 		p.setWeights(sampleWeight);
 
 		while(!state.hasLost()) {
@@ -64,7 +66,7 @@ public class PlayerSkeleton {
 //				}
 			}
 		}
-		System.out.println("You have completed "+state.getRowsCleared()+" rows.");
+		System.out.println("You have completed " + state.getRowsCleared() + " rows.");
 		System.exit(0);
 	}
 
@@ -72,27 +74,27 @@ public class PlayerSkeleton {
 		this.weights = weights;
 	}
 
-	private double getUtility(StateSimulator s, int move) {
+	private double getUtility(State s, int move) {
 		if (this.weights == null) {
 			System.out.println("PlayerSkeleton: Weight array is not set. Exiting");
 			System.exit(1);
 		}
 
+		sim.copyState(s);
 		sim.makeMove(move);
 		if (sim.hasLost()) {
-			sim.resetMove();
 			return Double.NEGATIVE_INFINITY;
 		}
 
-		int[] features = s.getFeaturesArray();
+		int[] features = sim.getFeaturesArray();
 
 		double utility = 0;
 		for (int i = 0; i < StateSimulator.NUM_FEATURES; i++){
 			utility += features[i] * weights[i];
 		}
 
-		sim.resetMove();
 		return utility;
+//		return Math.tanh(utility) - 1; // NN with no hidden layer
 	}
 
 	private static void printFeatures(int[] features) {

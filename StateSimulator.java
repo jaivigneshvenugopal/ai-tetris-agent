@@ -112,7 +112,7 @@ class StateSimulator extends State {
 		boolean isFilled = true; // off-by-one, even if wrong
 
 		// for use in getRowTransitions
-		int maxHeight = -1;
+		int maxHeight = 0;
 
 		// for use in landingheight
 		int maxLandingHeight = 0;

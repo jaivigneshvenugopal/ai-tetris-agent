@@ -195,6 +195,7 @@ public class State {
 		//for each column beyond the first in the piece
 		for(int c = 1; c < pWidth[nextPiece][orient];c++) {
 			height = Math.max(height,top[slot+c]-pBottom[nextPiece][orient][c]);
+
 		}
 		
 		//check if game ended
@@ -203,7 +204,6 @@ public class State {
 			return false;
 		}
 
-		
 		//for each column in the piece - fill in the appropriate blocks
 		for(int i = 0; i < pWidth[nextPiece][orient]; i++) {
 			
