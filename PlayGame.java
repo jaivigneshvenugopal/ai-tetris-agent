@@ -24,7 +24,7 @@ public class PlayGame implements Callable<Double> {
     private static final int C = 500;
 
     //TODO seems like < 50 is not good because the game is so random and also because we make the game intentionally harder than the usual one, we must consider the randomness more seriously
-    public static final int NUM_GAMES_TO_AVERAGE = 50;
+    private static final int NUM_GAMES_TO_AVERAGE = 50;
 
     private int[] performMeasures;
     private double[] weights;
@@ -61,14 +61,8 @@ public class PlayGame implements Callable<Double> {
                 scores[i] = getComprehensiveUtility();
         }
 
-//        System.out.print("Played with weights: ");
-//        for (double weight: weights) {
-//            System.out.print(weight + " ");
-//        }
-//        System.out.println("\n score = " + totalPerformance / NUM_GAMES_TO_AVERAGE);
-
         Arrays.sort(scores);
-        return scores[NUM_GAMES_TO_AVERAGE / 2];
+        return scores[NUM_GAMES_TO_AVERAGE / 2]; // the median
     }
 
     private void recordPerformancePerMove(int[] featuresAfterMove) {

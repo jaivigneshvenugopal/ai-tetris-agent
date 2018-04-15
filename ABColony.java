@@ -49,9 +49,10 @@ public class ABColony {
 
     /* Problem specific variables */
 
-    public static final int NUM_PARAMETERS = StateSimulator.NUM_FEATURES;
+    private static final int NUM_PARAMETERS = StateSimulator.NUM_FEATURES;
 
     private double[][] foods = new double[NUM_FOOD_SOURCE][NUM_PARAMETERS];
+    private double[][] foods_modified = new double[NUM_FOOD_SOURCE][NUM_PARAMETERS];
 
     /**
      * stores the fitness value for each of the food sources/locations. Fitness values are calculated via neural net/by playing Tetris.
@@ -191,7 +192,7 @@ public class ABColony {
 
     private void sendEmployedBees() {
         for (int i = 0; i < NUM_FOOD_SOURCE; i++) {
-            updateWithGBest(i);
+            updateWithGBest(i, false);
         }
 
         if (RUN_CONCURRENT) {
@@ -233,20 +234,30 @@ public class ABColony {
     private void sendOnlookerBees() {
         for (int t = 0; t < NUM_FOOD_SOURCE; t++) {
             int i = selectFoodSource();
-            updateWithGBest(i);
+            foods_modified[t] = updateWithGBest(i, true);
             foodSourceChanged[t] = i;
         }
 
         if (RUN_CONCURRENT) {
             tasks.clear();
-            for (double[] food: foods) {
-                tasks.add(new PlayGame(food));
+            for (double[] food_modified: foods_modified) {
+                tasks.add(new PlayGame(food_modified));
             }
             try {
                 List<Future<Double>> results = es.invokeAll(tasks);
                 for (int t = 0; t < results.size(); t++) {
                     double newFitness = results.get(t).get();
-                    compareFitness(newFitness, foodSourceChanged[t]);
+                    int i = foodSourceChanged[t];
+                    if (newFitness > fitness[i]) {
+                        fitness[i] = newFitness;
+                        trialCounts[i] = 0;
+                        // update the entire array
+                        System.arraycopy(foods_modified[t], 0, foods[i], 0, NUM_PARAMETERS);
+                    } else {
+                        trialCounts[i]++;
+                        if (trialCounts[i] >= LIMIT)
+                            foodSourceToAbandon = i;
+                    }
                 }
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
@@ -287,8 +298,15 @@ public class ABColony {
      * in the two arrays so that if the performance deteriorates, we can revert back
      * @param i the index of a food source
      */
-    private void updateWithGBest(int i) {
-        double[] xi = foods[i];
+    private double[] updateWithGBest(int i, boolean saveCopy) {
+        double[] xi;
+        if (saveCopy) {
+            xi = new double[NUM_PARAMETERS];
+            System.arraycopy(foods[i], 0, xi, 0, NUM_PARAMETERS);
+        } else {
+            xi = foods[i];
+        }
+
         int k; // randomly selected neighbour index
         int j; // randomly selected parameter index
         double old_value, update;
@@ -309,6 +327,7 @@ public class ABColony {
                 lower = j == StateSimulator2.INDEX_ERODED_PIECE_CELLS ? 0:  LOWER;
             } while (update > upper || update < lower);
         } else {
+            // if not limit the range
             do {
                 k = (int) (rand.nextDouble() * NUM_FOOD_SOURCE);
             } while (k != i);
@@ -319,15 +338,16 @@ public class ABColony {
             double[] xk = foods[k];
 
             update = xi[j] + 2*(rand.nextDouble() - 0.5) * (xi[j] - xk[j]) + (rand.nextDouble() * C) * (globalBestParameters[j] - xi[j]);
-
 //            update = xi[j] + 2*(rand.nextDouble() - 0.5) * (xi[j] - xk[j]);
         }
 
-        parameterChanged[i] = j;
-        parameterOldValue[i] = old_value;
-
+        if (!saveCopy) {
+            parameterChanged[i] = j;
+            parameterOldValue[i] = old_value;
+        }
         // now try the game with updated weight vector.
         xi[j] = update;
+        return xi;
     }
 
     private double getSumFitness() {

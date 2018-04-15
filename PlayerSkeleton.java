@@ -46,7 +46,7 @@ public class PlayerSkeleton {
 		State state = new State();
 		new TFrame(state);
 		PlayerSkeleton p = new PlayerSkeleton();
-		double[] sampleWeight = { -3.06963462 , -8.38935298 , -6.85516551 , -8.72881560 , -4.45039098 , -7.36354452 , -6.63494222 , -9.56366090};
+		double[] sampleWeight = {  -1.01348852 , -0.47979324 , -0.01937872 , -0.53470690 , -0.17884257 , -0.64188386 , -0.14229389 , -0.72153376 };
 		p.setWeights(sampleWeight);
 
 		while(!state.hasLost()) {
