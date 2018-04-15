@@ -1,5 +1,8 @@
+import sun.plugin2.message.CustomSecurityManagerAckMessage;
+
 import javax.swing.plaf.synth.SynthEditorPaneUI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
 
@@ -144,14 +147,28 @@ public class Cuckoo {
         int randNum2 = - randomGenerator.nextInt(1000);
         int randNum3 = - randomGenerator.nextInt(1000);
         int randNum4 = randomGenerator.nextInt(1000);
+        int randNum5 = - randomGenerator.nextInt(1000);
+        int randNum6 = - randomGenerator.nextInt(1000);
+        int randNum7 = - randomGenerator.nextInt(1000);
+        int randNum8 = - randomGenerator.nextInt(1000);
+        int randNum9 = - randomGenerator.nextInt(1000);
+        int randNum10 = - randomGenerator.nextInt(1000);
+        int randNum11 = - randomGenerator.nextInt(1000);
 
         double newNumHoles = randNum1;
         double newHeightDiff = randNum2;
         double newMaxHeight = randNum3;
         double newRowsCleared = randNum4;
-        double gameLost = -10000000;
+        double newGameLost = -10000000;
+        double newColTrans = randNum5;
+        double newHoleDepth = randNum6;
+        double numRowsWithHole = randNum7;
+        double newErodedPieces = randNum8;
+        double newLandingHeight = randNum9;
+        double newRowTrans = randNum10;
+        double newCumalativeWells =randNum11;
 
-        Solution newSolution = new Solution(newNumHoles, newHeightDiff, newMaxHeight, newRowsCleared, gameLost);
+        Solution newSolution = new Solution(newNumHoles, newHeightDiff, newMaxHeight, newRowsCleared, newGameLost, newColTrans, newHoleDepth, numRowsWithHole, newErodedPieces, newLandingHeight, newRowTrans, newCumalativeWells);
         newSolution.calculatePerformanceMeasure();
 
         return newSolution;
@@ -163,17 +180,31 @@ public class Cuckoo {
         double levySteps2 = - levyDistribution.sample_positive(2.0, 10.0);
         double levySteps3 = - levyDistribution.sample_positive(2.0, 10.0);
         double levySteps4 = levyDistribution.sample_positive(2.0, 10.0);
+        double levySteps5 = - levyDistribution.sample_positive(2.0, 10.0);
+        double levySteps6 = - levyDistribution.sample_positive(2.0, 10.0);
+        double levySteps7 = - levyDistribution.sample_positive(2.0, 10.0);
+        double levySteps8 = - levyDistribution.sample_positive(2.0, 10.0);
+        double levySteps9 = - levyDistribution.sample_positive(2.0, 10.0);
+        double levySteps10 = - levyDistribution.sample_positive(2.0, 10.0);
+        double levySteps11 = - levyDistribution.sample_positive(2.0, 10.0);
 
         Solution randomExistingSolution = getRandomExistingSolution(notableSizeofSolutionSet);
 
         Random randomGenerator = new Random();
-        int randNum = randomGenerator.nextInt(4);
+        int randNum = randomGenerator.nextInt(11);
 
         double newNumHoles = randomExistingSolution.COE_NUM_HOLES;
         double newHeightDiff = randomExistingSolution.COE_HEIGHT_DIFF;
         double newMaxHeight = randomExistingSolution.COE_MAX_HEIGHT;
         double newRowsCleared = randomExistingSolution.COE_ROWS_CLEARED;
-        double gameLost = randomExistingSolution.COE_LOST;
+        double newGameLost = randomExistingSolution.COE_LOST;
+        double newColTrans = randomExistingSolution.COL_TRANSITIONS;
+        double newHoleDepth = randomExistingSolution.HOLE_DEPTH;
+        double numRowsWithHole = randomExistingSolution.NUM_ROWS_WITH_HOLE;
+        double newErodedPieces = randomExistingSolution.ERODED_PIECE_CELLS;
+        double newLandingHeight = randomExistingSolution.LANDING_HEIGHT;
+        double newRowTrans = randomExistingSolution.ROW_TRANSITIONS;
+        double newCumalativeWells = randomExistingSolution.CUMULATIVE_WELLS;
 
         switch (randNum) {
             case 0: newNumHoles += levySteps1;
@@ -184,9 +215,23 @@ public class Cuckoo {
                     break;
             case 3: newRowsCleared += levySteps4;
                     break;
+            case 4: newColTrans += levySteps5;
+                break;
+            case 5: newHoleDepth += levySteps6;
+                break;
+            case 6: numRowsWithHole += levySteps7;
+                break;
+            case 7: newErodedPieces += levySteps8;
+                break;
+            case 8: newLandingHeight += levySteps9;
+                break;
+            case 9: newRowTrans += levySteps10;
+                break;
+            case 10: newCumalativeWells += levySteps11;
+                break;
         }
 
-        Solution newSolution = new Solution(newNumHoles, newHeightDiff, newMaxHeight, newRowsCleared, gameLost);
+        Solution newSolution = new Solution(newNumHoles, newHeightDiff, newMaxHeight, newRowsCleared, newGameLost, newColTrans, newHoleDepth, numRowsWithHole, newErodedPieces, newLandingHeight, newRowTrans, newCumalativeWells);
         newSolution.calculatePerformanceMeasure();
 
         return newSolution;
@@ -207,35 +252,62 @@ class Solution implements Comparable {
     public double COE_MAX_HEIGHT;
     public double COE_ROWS_CLEARED;
     public double COE_LOST;
+    public double COL_TRANSITIONS;
+    public double HOLE_DEPTH;
+    public double NUM_ROWS_WITH_HOLE;
+    public double ERODED_PIECE_CELLS;
+    public double LANDING_HEIGHT;
+    public double ROW_TRANSITIONS;
+    public double CUMULATIVE_WELLS;
     private double PERFORMANCE_MEASURE;
 
     public Solution() {
-        COE_NUM_HOLES = -29.964719027661793;
-        COE_HEIGHT_DIFF = -6.822748171011885;
+        COE_NUM_HOLES = -86.964719027661793;
+        COE_HEIGHT_DIFF = -19.422748171011885;
         COE_MAX_HEIGHT = -1.0959024670628437;
-        COE_ROWS_CLEARED = 9.000000000000000;
+        COE_ROWS_CLEARED = 13.000000000000000;
         COE_LOST = -10000000;
+        COL_TRANSITIONS = 0;
+        HOLE_DEPTH = 0;
+        NUM_ROWS_WITH_HOLE = 0;
+        ERODED_PIECE_CELLS = 0;
+        LANDING_HEIGHT = 0;
+        ROW_TRANSITIONS = 0;
+        CUMULATIVE_WELLS = 0;
         PERFORMANCE_MEASURE = 600;
     }
 
-    public Solution(double COE_NUM_HOLES, double COE_HEIGHT_DIFF, double COE_MAX_HEIGHT, double COE_ROWS_CLEARED, double COE_LOST) {
+    public Solution(double COE_NUM_HOLES, double COE_HEIGHT_DIFF, double COE_MAX_HEIGHT, double COE_ROWS_CLEARED, double COE_LOST, double COL_TRANSITIONS,
+            double HOLE_DEPTH, double NUM_ROWS_WITH_HOLE, double ERODED_PIECE_CELLS, double LANDING_HEIGHT, double ROW_TRANSITIONS, double CUMULATIVE_WELLS) {
         this.COE_NUM_HOLES = COE_NUM_HOLES;
         this.COE_HEIGHT_DIFF = COE_HEIGHT_DIFF;
         this.COE_MAX_HEIGHT = COE_MAX_HEIGHT;
         this.COE_ROWS_CLEARED = COE_ROWS_CLEARED;
         this.COE_LOST = COE_LOST;
+        this.COL_TRANSITIONS = COL_TRANSITIONS;
+        this.HOLE_DEPTH = HOLE_DEPTH;
+        this.NUM_ROWS_WITH_HOLE = NUM_ROWS_WITH_HOLE;
+        this.ERODED_PIECE_CELLS = ERODED_PIECE_CELLS;
+        this.LANDING_HEIGHT = LANDING_HEIGHT;
+        this.ROW_TRANSITIONS = ROW_TRANSITIONS;
+        this.CUMULATIVE_WELLS = CUMULATIVE_WELLS;
     }
 
     public void calculatePerformanceMeasure() {
-        Heuristics.setWeights(COE_NUM_HOLES, COE_HEIGHT_DIFF, COE_MAX_HEIGHT, COE_ROWS_CLEARED, COE_LOST);
-        System.out.println("CURRENT CONFIG IN TEST: " + "[" + COE_NUM_HOLES + ", " + COE_HEIGHT_DIFF + ", " + COE_MAX_HEIGHT + ", " + COE_ROWS_CLEARED + ", " + COE_LOST + "]");
+        Heuristics.setWeights(COE_NUM_HOLES, COE_HEIGHT_DIFF, COE_MAX_HEIGHT, COE_ROWS_CLEARED, COE_LOST, COL_TRANSITIONS,
+                HOLE_DEPTH, NUM_ROWS_WITH_HOLE, ERODED_PIECE_CELLS, LANDING_HEIGHT, ROW_TRANSITIONS, CUMULATIVE_WELLS);
+        System.out.println("CURRENT CONFIG IN TEST: " + "[" + COE_NUM_HOLES + ", " + COE_HEIGHT_DIFF + ", " + COE_MAX_HEIGHT + ", " + COE_ROWS_CLEARED + ", "
+                + COE_LOST + ", " + COL_TRANSITIONS + ", " + HOLE_DEPTH + ", " + NUM_ROWS_WITH_HOLE + ", " + ERODED_PIECE_CELLS + ", " + LANDING_HEIGHT + ", " + ROW_TRANSITIONS + ", " + CUMULATIVE_WELLS + "]");
         PlayerSkeleton player = new PlayerSkeleton();
-        int sumFitness = 0;
-        for (int i = 0; i < 100; i++) {
-            sumFitness += player.run();
+        double[] fitnessValues = new double[101];
+        for (int i = 0; i < 101; i++) {
+            fitnessValues[i] = player.run();
         }
 
-        PERFORMANCE_MEASURE = sumFitness/100.0;
+        Arrays.sort(fitnessValues);
+
+        PERFORMANCE_MEASURE = fitnessValues[51];
+
 
         System.out.println("Calculating performance value : " + PERFORMANCE_MEASURE);
     }
@@ -259,6 +331,6 @@ class Solution implements Comparable {
 
     @Override
     public String toString() {
-        return "COE_NUM_HOLES " + COE_NUM_HOLES + " COE_HEIGHT_DIFF " + COE_HEIGHT_DIFF + " COE_MAX_HEIGHT " + COE_MAX_HEIGHT + " COE_ROW_CLEARED " + COE_ROWS_CLEARED + " PERFORMANCE_MEASURE " + PERFORMANCE_MEASURE;
+        return "NULL for now";
     }
  }
