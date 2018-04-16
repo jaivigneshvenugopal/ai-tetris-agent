@@ -82,6 +82,8 @@ public class Cuckoo {
             if (newSolution.getPerformanceMeasure() > randomExistingSolution.getPerformanceMeasure()) {
                 if (DEBUG) {
                     System.out.println("New solution is better than one of 15");
+                    System.out.println("new sol is " + newSolution.getPerformanceMeasure());
+                    System.out.println("old sol is " + randomExistingSolution.getPerformanceMeasure());
                 }
                 replaceSolution(newSolution, randomExistingSolution);
 
@@ -262,19 +264,19 @@ class Solution implements Comparable {
     private double PERFORMANCE_MEASURE;
 
     public Solution() {
-        COE_NUM_HOLES = -86.964719027661793;
-        COE_HEIGHT_DIFF = -19.422748171011885;
-        COE_MAX_HEIGHT = -1.0959024670628437;
-        COE_ROWS_CLEARED = 13.000000000000000;
+        COE_NUM_HOLES = -173.6445438223039;
+        COE_HEIGHT_DIFF = -24.38282096450111;
+        COE_MAX_HEIGHT = -7.384281915256887;
+        COE_ROWS_CLEARED = 13.254838114099638;
         COE_LOST = -10000000;
-        COL_TRANSITIONS = 0;
-        HOLE_DEPTH = 0;
-        NUM_ROWS_WITH_HOLE = 0;
+        COL_TRANSITIONS = -20.46688670219923;
+        HOLE_DEPTH = -2.24152962603214;
+        NUM_ROWS_WITH_HOLE = -26.842881307597445;
         ERODED_PIECE_CELLS = 0;
-        LANDING_HEIGHT = 0;
-        ROW_TRANSITIONS = 0;
-        CUMULATIVE_WELLS = 0;
-        PERFORMANCE_MEASURE = 600;
+        LANDING_HEIGHT = -19.649158928765054;
+        ROW_TRANSITIONS = -3.9610915186662368;
+        CUMULATIVE_WELLS = -51.21263504379763;
+        PERFORMANCE_MEASURE = 100000;
     }
 
     public Solution(double COE_NUM_HOLES, double COE_HEIGHT_DIFF, double COE_MAX_HEIGHT, double COE_ROWS_CLEARED, double COE_LOST, double COL_TRANSITIONS,
