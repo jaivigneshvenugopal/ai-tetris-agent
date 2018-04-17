@@ -10,7 +10,6 @@ public class Debug {
     public static final String ANSI_WHITE = "\u001B[37m";
     public static final String BLACK_BOLD = "\033[1;30m";
 
-
     public static void printWithLines(boolean startWithNewLine, String str) {
         if (startWithNewLine)
             System.out.println();

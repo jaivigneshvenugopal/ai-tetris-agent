@@ -1,12 +1,11 @@
 import java.util.Scanner;
 
 public class PlayerSkeleton {
-
 	// another State object to simulate the moves before actually playing
 	protected StateSimulator2 sim;
 	private double[] weights;
-	private static final boolean DEBUG_FEATURES = false;
 
+	private static final boolean DEBUG_FEATURES = false;
 	private static Scanner sc = new Scanner(System.in);
 
 	public PlayerSkeleton() {
@@ -15,7 +14,6 @@ public class PlayerSkeleton {
 
 	//implement this function to have a working system
 	public int pickMove(State s, int[][] legalMoves) {
-
 		int bestMove = getBestMoveBySimulation(s, legalMoves.length);
 		if (DEBUG_FEATURES) {
 			sim.copyState(s);
@@ -46,7 +44,8 @@ public class PlayerSkeleton {
 		State state = new State();
 		new TFrame(state);
 		PlayerSkeleton p = new PlayerSkeleton();
-		double[] sampleWeight = {  -1.01348852 , -0.47979324 , -0.01937872 , -0.53470690 , -0.17884257 , -0.64188386 , -0.14229389 , -0.72153376 };
+//		double[] sampleWeight = { -0.48008527 , -0.49894161 , 0.00503425 , -0.44941832 , -0.01327127 , -0.34682286 , -0.09494767 , -0.43485164 };
+		double[] sampleWeight = { -0.66815299 , -0.18275129 , -0.00313774 , -0.61375989 , -0.10106387 , -0.26484914 , -0.09336810 , -0.23320790 };
 		p.setWeights(sampleWeight);
 
 		while(!state.hasLost()) {
@@ -89,24 +88,24 @@ public class PlayerSkeleton {
 		int[] features = sim.getFeaturesArray();
 
 		double utility = 0;
-		for (int i = 0; i < StateSimulator.NUM_FEATURES; i++){
+		for (int i = 0; i < StateSimulator2.NUM_FEATURES; i++){
+			// get linear weighted sum
 			utility += features[i] * weights[i];
 		}
 
 		return utility;
-//		return Math.tanh(utility) - 1; // NN with no hidden layer
 	}
 
 	private static void printFeatures(int[] features) {
 		System.out.println("--------------------------------------------------");
-		System.out.println("#holes = " + 			features[StateSimulator.INDEX_NUMHOLES]);
-		System.out.println("Col Transition = " + 	features[StateSimulator.INDEX_COL_TRANSITIONS]);
-		System.out.println("Row Transition = " + 	features[StateSimulator.INDEX_ROW_TRANSITIONS]);
-		System.out.println("holes depth = " + 		features[StateSimulator.INDEX_HOLE_DEPTH]);
-		System.out.println("Cumulative well = " + 	features[StateSimulator.INDEX_CUMULATIVE_WELLS]);
-		System.out.println("Landing height = " + 	features[StateSimulator.INDEX_LANDING_HEIGHT]);
-		System.out.println("#rows with hole = " +	features[StateSimulator.INDEX_NUM_ROWS_WITH_HOLE]);
-		System.out.println("Eroded piece cells " +  features[StateSimulator.INDEX_ERODED_PIECE_CELLS]);
+		System.out.println("#holes = " + 			features[StateSimulator2.INDEX_NUMHOLES]);
+		System.out.println("Col Transition = " + 	features[StateSimulator2.INDEX_COL_TRANSITIONS]);
+		System.out.println("Row Transition = " + 	features[StateSimulator2.INDEX_ROW_TRANSITIONS]);
+		System.out.println("holes depth = " + 		features[StateSimulator2.INDEX_HOLE_DEPTH]);
+		System.out.println("Cumulative well = " + 	features[StateSimulator2.INDEX_CUMULATIVE_WELLS]);
+		System.out.println("Landing height = " + 	features[StateSimulator2.INDEX_LANDING_HEIGHT]);
+		System.out.println("#rows with hole = " +	features[StateSimulator2.INDEX_NUM_ROWS_WITH_HOLE]);
+		System.out.println("Eroded piece cells " +  features[StateSimulator2.INDEX_ERODED_PIECE_CELLS]);
 		System.out.println("--------------------------------------------------");
 	}
 }

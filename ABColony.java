@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * Implementation of (Gbest-guided) Artificial Bee Colony algorithm. Modified from ...
+ * Implementation of (Gbest-guided) Artificial Bee Colony algorithm.
  */
 public class ABColony {
     /* Control Parameters of ABC algorithm */
@@ -18,11 +18,11 @@ public class ABColony {
     /**
      * A colony consists of
      * 1. employee bees
-     * 2. onlook bees
+     * 2. onlooker bees
      * 3. scout bee (limited to only 1)
      * 50 is obtained from research
      */
-    public static final int COLONY_SIZE = 100;
+    public static final int COLONY_SIZE = 80;
 
     /**
      * Since half the colony are employee bees, this is equal to half the colony size.
@@ -49,18 +49,18 @@ public class ABColony {
 
     /* Problem specific variables */
 
-    private static final int NUM_PARAMETERS = StateSimulator.NUM_FEATURES;
+    private static final int NUM_PARAMETERS = StateSimulator2.NUM_FEATURES;
 
-    private double[][] foods = new double[NUM_FOOD_SOURCE][NUM_PARAMETERS];
+    private double[][] foods          = new double[NUM_FOOD_SOURCE][NUM_PARAMETERS];
     private double[][] foods_modified = new double[NUM_FOOD_SOURCE][NUM_PARAMETERS];
 
     /**
-     * stores the fitness value for each of the food sources/locations. Fitness values are calculated via neural net/by playing Tetris.
+     * stores the fitness value for each of the food sources/locations. Fitness values are average/median scores of games played using with a particular set of weights.
      */
     private double[] fitness = new double[NUM_FOOD_SOURCE];
 
     /**
-     * stores the number of trials made for each food source/location. Once this exceeds the limit, that food source is abandoned and the employee bee for that food source will become a scout.
+     * stores the number of trials made for each food source/location. Once this exceeds LIMIT, that food source is abandoned and the employee bee for that food source will become a scout to initialize a random food source.
      */
     private double[] trialCounts = new double[NUM_FOOD_SOURCE];
 
@@ -74,8 +74,8 @@ public class ABColony {
      */
     private static final int C = 2;
 
-    public double globalBestFitness = Double.NEGATIVE_INFINITY;
-    public double[] globalBestParameters = new double[NUM_PARAMETERS];
+    private double globalBestFitness = Double.NEGATIVE_INFINITY;
+    private double[] globalBestParameters = new double[NUM_PARAMETERS];
 
     /* For parallel computing */
     private static final boolean RUN_CONCURRENT = true;
@@ -86,8 +86,7 @@ public class ABColony {
     /* stores the index of parameter being changed for playing a game for each food source. */
     private int[] parameterChanged = new int[NUM_FOOD_SOURCE];
     private double[] parameterOldValue = new double[NUM_FOOD_SOURCE];
-    private int[] foodSourceChanged = new int[NUM_FOOD_SOURCE]; // used for keeping track of which food source an onlooker bee modified.
-    Random rand = new Random();
+    private Random rand = new Random();
 
     private double UPPER = 1.0;
     private double LOWER = -1.0;
@@ -107,32 +106,39 @@ public class ABColony {
     }
 
     public static void main(String[] args) throws IOException {
-        ABColony bee = new ABColony();
-        bee.initializeFoodSources();
-        bee.memorizeBestSource();
-        for (int i = 0; i < MAX_CYCLE; i++) {
-            bee.sendEmployedBees();
-            bee.sendOnlookerBees();
-            bee.memorizeBestSource();
-            bee.sendScoutBees();
+        ABColony colony = new ABColony();
+        colony.initializeFoodSources();
+        colony.memorizeBestSource();
+        printResult(colony);
+        PlayGame.setLevel(3);
+        for (int i = 1; i < MAX_CYCLE; i++) {
+            colony.sendEmployedBees();
+            colony.sendOnlookerBees();
+            colony.memorizeBestSource();
+            colony.sendScoutBees();
             if (i % 10 == 0) {
                 System.out.println("Iteration #" + i);
-                printResult(bee);
+                printResult(colony);
             }
         }
 
-        bee.es.shutdown();
+        colony.es.shutdown();
 
         if (WEIGHTS_RESULT_FILE != null) {
-            writeOptimalWeightToFile(bee.globalBestParameters);
+            writeOptimalWeightsToFile(colony);
         }
+        System.exit(0);
     }
 
-    private static void writeOptimalWeightToFile(double[] weights) throws IOException {
-        BufferedWriter bw = new BufferedWriter(new FileWriter(WEIGHTS_RESULT_FILE));
-        for (double weight: weights) {
+    private static void writeOptimalWeightsToFile(ABColony colony) throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(System.currentTimeMillis() + WEIGHTS_RESULT_FILE));
+        bw.write(colony.globalBestFitness + "\n");
+        for (double weight: colony.globalBestParameters) {
             bw.write(Double.toString(weight) + " ");
         }
+
+        bw.flush();
+        bw.close();
     }
 
     private static void printResult(ABColony bee) {
@@ -144,9 +150,13 @@ public class ABColony {
         System.out.println("\n-----------------------------------------");
     }
 
+    /**
+     * @param foodSource food source to run the game with
+     * @return the average/median score of games played with foodSource
+     */
     private double calculateFitness(double[] foodSource) {
         tasks.clear();
-        tasks.add(new PlayGame(foodSource));
+        tasks.add(new PlayGame(foodSource, 0));
         try {
             for (Future<Double> future: es.invokeAll(tasks)) return future.get(); // just one thread
         } catch (InterruptedException | ExecutionException e) {
@@ -175,13 +185,15 @@ public class ABColony {
         for (int j = 0; j < NUM_PARAMETERS; j++) {
             foods[foodIndex][j] = LOWER + rand.nextDouble() * (UPPER - LOWER);
         }
-        fitness[foodIndex] = calculateFitness(foods[foodIndex]); // since we only have 1 scout, it is ok to use single thread
+        normalizeVector(foods[foodIndex]);
+        // since we only have 1 scout bee, it is ok to use single thread
+        fitness[foodIndex] = calculateFitness(foods[foodIndex]);
 
-        // since this food source has just been found, set trialCounts = 0
+        // since this food source has just been found, reset trialCounts
         trialCounts[foodIndex] = 0;
     }
 
-    /*All food sources are initialized */
+    /*initializes all the food sources before optimization */
     private void initializeFoodSources() {
         if (INITIAL_WEIGHTS_FILE != null)
             return; //TODO read from the file
@@ -191,29 +203,38 @@ public class ABColony {
     }
 
     private void sendEmployedBees() {
-        for (int i = 0; i < NUM_FOOD_SOURCE; i++) {
-            updateWithGBest(i, false);
-        }
-
         if (RUN_CONCURRENT) {
-            tasks.clear();
-            for (double[] food: foods) {
-                tasks.add(new PlayGame(food));
-            }
-            try {
-                List<Future<Double>> results = es.invokeAll(tasks);
-                for (int i = 0; i < results.size(); i++) {
-                    double newFitness = results.get(i).get();
-                    compareFitness(newFitness, i);
+            int foodIndex = 0;
+            while (foodIndex < NUM_FOOD_SOURCE) {
+                tasks.clear();
+                for (int count = 0; count < NUM_THREADS && foodIndex < NUM_FOOD_SOURCE; count++) {
+                    updateWithGBest(foodIndex, foodIndex);
+                    //TODO
+                    normalizeVector(foods_modified[foodIndex]);
+                    tasks.add(new PlayGame(foods_modified[foodIndex], foodIndex, foodIndex));
+                    foodIndex++;
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-        } else { // single-threaded
-            for (int i = 0; i < NUM_FOOD_SOURCE; i++) {
-                double newFitness = calculateFitness(foods[i]);
-                compareFitness(newFitness, i);
-            }
+                try {
+                    List<Future<Double>> results = es.invokeAll(tasks);
+                    for (int i = 0; i < results.size(); i++) {
+                        double newFitness = results.get(i).get();
+                        int index = tasks.get(i).foodIndex;
+
+                        if (newFitness > fitness[index]) {
+                            fitness[index] = newFitness;
+                            trialCounts[index] = 0;
+                            // update the entire array
+                            System.arraycopy(foods_modified[index], 0, foods[index], 0, NUM_PARAMETERS);
+                        } else {
+                            trialCounts[index]++;
+                            if (trialCounts[index] >= LIMIT)
+                                foodSourceToAbandon = index;
+                        }
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            } // end while
         }
     }
 
@@ -232,42 +253,40 @@ public class ABColony {
     }
 
     private void sendOnlookerBees() {
-        for (int t = 0; t < NUM_FOOD_SOURCE; t++) {
-            int i = selectFoodSource();
-            foods_modified[t] = updateWithGBest(i, true);
-            foodSourceChanged[t] = i;
-        }
-
         if (RUN_CONCURRENT) {
-            tasks.clear();
-            for (double[] food_modified: foods_modified) {
-                tasks.add(new PlayGame(food_modified));
-            }
-            try {
-                List<Future<Double>> results = es.invokeAll(tasks);
-                for (int t = 0; t < results.size(); t++) {
-                    double newFitness = results.get(t).get();
-                    int i = foodSourceChanged[t];
-                    if (newFitness > fitness[i]) {
-                        fitness[i] = newFitness;
-                        trialCounts[i] = 0;
-                        // update the entire array
-                        System.arraycopy(foods_modified[t], 0, foods[i], 0, NUM_PARAMETERS);
-                    } else {
-                        trialCounts[i]++;
-                        if (trialCounts[i] >= LIMIT)
-                            foodSourceToAbandon = i;
-                    }
+            int bee = 0;
+            while (bee < NUM_FOOD_SOURCE) {
+                tasks.clear();
+                for (int count = 0; count < NUM_THREADS && bee < NUM_FOOD_SOURCE; count++) {
+                    int foodIndex = selectFoodSource();
+                    updateWithGBest(foodIndex, bee);
+                    //TODO
+                    normalizeVector(foods_modified[bee]);
+                    tasks.add(new PlayGame(foods_modified[bee], foodIndex, bee));
+                    bee++;
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-        } else {
-            for (int t = 0; t < NUM_FOOD_SOURCE; t++) {
-                int i = foodSourceChanged[t];
-                double newFitness = calculateFitness(foods[i]);
-                compareFitness(newFitness, i);
-            }
+                try {
+                    List<Future<Double>> results = es.invokeAll(tasks);
+                    for (int i = 0; i < results.size(); i++) {
+                        double newFitness = results.get(i).get();
+                        int foodIndex = tasks.get(i).foodIndex;
+                        int beeIndex = tasks.get(i).beeIndex;
+
+                        if (newFitness > fitness[foodIndex]) {
+                            fitness[foodIndex] = newFitness;
+                            trialCounts[foodIndex] = 0;
+                            // update the entire array
+                            System.arraycopy(foods_modified[beeIndex], 0, foods[foodIndex], 0, NUM_PARAMETERS);
+                        } else {
+                            trialCounts[foodIndex]++;
+                            if (trialCounts[foodIndex] >= LIMIT)
+                                foodSourceToAbandon = foodIndex;
+                        }
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            } // end while
         }
     }
 
@@ -298,10 +317,11 @@ public class ABColony {
      * in the two arrays so that if the performance deteriorates, we can revert back
      * @param i the index of a food source
      */
-    private double[] updateWithGBest(int i, boolean saveCopy) {
+    private void updateWithGBest(int i, int t) {
+        boolean isOnlookerPhase = t != -1;
         double[] xi;
-        if (saveCopy) {
-            xi = new double[NUM_PARAMETERS];
+        if (isOnlookerPhase) { // if this is called during onlooker phase
+            xi = foods_modified[t];
             System.arraycopy(foods[i], 0, xi, 0, NUM_PARAMETERS);
         } else {
             xi = foods[i];
@@ -313,7 +333,6 @@ public class ABColony {
         double upper, lower;
 
         if (LIMIT_RANGE) {
-            //TODO limit the search space to vectors of unit length, since c*W yields the same set of actions for all c. In the experiment, they run the optimization for roughly 13 times. Optimally, we would like to normalize the weight vectors => so just normalize every time?
             do {
                 do {
                     k = (int) (rand.nextDouble() * NUM_FOOD_SOURCE);
@@ -326,8 +345,9 @@ public class ABColony {
                 upper = j == StateSimulator2.INDEX_ERODED_PIECE_CELLS ? 1:  UPPER;
                 lower = j == StateSimulator2.INDEX_ERODED_PIECE_CELLS ? 0:  LOWER;
             } while (update > upper || update < lower);
-        } else {
+
             // if not limit the range
+        } else {
             do {
                 k = (int) (rand.nextDouble() * NUM_FOOD_SOURCE);
             } while (k != i);
@@ -337,17 +357,27 @@ public class ABColony {
             old_value = xi[j];
             double[] xk = foods[k];
 
-            update = xi[j] + 2*(rand.nextDouble() - 0.5) * (xi[j] - xk[j]) + (rand.nextDouble() * C) * (globalBestParameters[j] - xi[j]);
-//            update = xi[j] + 2*(rand.nextDouble() - 0.5) * (xi[j] - xk[j]);
+            // the amount of change is too small?
+            double rand1 = 2*(rand.nextDouble() - 0.5); // [-1, 1]
+            while (Math.abs(rand1) < 0.1) {
+                rand1 *= 10;
+            }
+
+            double rand2 = rand.nextDouble();
+            while (Math.abs(rand1) < 0.1) {
+                rand1 *= 10;
+            }
+
+            update = xi[j] + rand1 * (xi[j] - xk[j]) + (rand2 * C) * (globalBestParameters[j] - xi[j]);
         }
 
-        if (!saveCopy) {
+        if (!isOnlookerPhase) {
+            // don't copy the entire array but only change one parameter and save the old value
             parameterChanged[i] = j;
             parameterOldValue[i] = old_value;
         }
         // now try the game with updated weight vector.
         xi[j] = update;
-        return xi;
     }
 
     private double getSumFitness() {
@@ -358,20 +388,21 @@ public class ABColony {
         return ans;
     }
 
-    private double[] normalizeVector(double[] vector) {
-        double[] normalized = new double[vector.length];
+    /**
+     * normalizes a given vector to make it of unit length
+     * @param vector vector to be normalized
+     */
+    private void normalizeVector(double[] vector) {
         double sum = 0;
         for(double elem: vector) {
-            sum += elem;
+            sum += Math.pow(elem, 2);
         }
+
+        sum = Math.sqrt(sum);
 
         for (int i = 0; i < vector.length; i++) {
-            normalized[i] = vector[i] / sum;
+            vector[i] /= sum;
         }
-
-        return normalized;
-
-        // if we do this, we will need another array that stores ALL the elements
     }
 
 }

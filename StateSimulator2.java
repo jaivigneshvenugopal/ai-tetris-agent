@@ -93,14 +93,14 @@ public class StateSimulator2 {
         }
     }
 
-    public static final int INDEX_NUMHOLES = 0;
-    public static final int INDEX_COL_TRANSITIONS = 1;
-    public static final int INDEX_HOLE_DEPTH = 2;
-    public static final int INDEX_NUM_ROWS_WITH_HOLE = 3;
-    public static final int INDEX_ERODED_PIECE_CELLS = 4; // the only one to maximize.
-    public static final int INDEX_LANDING_HEIGHT = 5;
-    public static final int INDEX_ROW_TRANSITIONS = 6;
-    public static final int INDEX_CUMULATIVE_WELLS = 7;
+    public static final int INDEX_NUMHOLES              = 0;
+    public static final int INDEX_COL_TRANSITIONS       = 1;
+    public static final int INDEX_HOLE_DEPTH            = 2;
+    public static final int INDEX_NUM_ROWS_WITH_HOLE    = 3;
+    public static final int INDEX_ERODED_PIECE_CELLS    = 4; // the only one to set positive
+    public static final int INDEX_LANDING_HEIGHT        = 5;
+    public static final int INDEX_ROW_TRANSITIONS       = 6;
+    public static final int INDEX_CUMULATIVE_WELLS      = 7;
 
     public static final int NUM_FEATURES = 8;
 
@@ -381,17 +381,22 @@ public class StateSimulator2 {
         for (int col = 1; col < top.length - 1; col++) {
             if (top[col - 1] > top[col] && top[col] < top[col + 1]) {
                 int depth = Math.min(top[col - 1] - top[col], top[col + 1] - top[col]);
-                sumWellDepths += depth;
+                int arithSeries = (depth * (depth+1)) / 2;
+                sumWellDepths += arithSeries;
             }
         }
 
         // check left- and right-most column, treating the wall as block of maxHeight.
         if (top[0] < top[1]) {
-            sumWellDepths += top[1] - top[0];
+            int depth = top[1] - top[0];
+            int arithSeries = (depth * (depth+1)) / 2;
+            sumWellDepths += arithSeries;
         }
 
         if (top[top.length - 1] < top[top.length - 2]) {
-            sumWellDepths += (top[top.length - 2] - top[top.length - 1]);
+            int depth = (top[top.length - 2] - top[top.length - 1]);
+            int arithSeries = (depth * (depth+1)) / 2;
+            sumWellDepths += arithSeries;
         }
 
         features[INDEX_CUMULATIVE_WELLS] = sumWellDepths;
