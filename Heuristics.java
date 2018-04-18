@@ -179,21 +179,25 @@ public class Heuristics {
 
         //getCumulativeWells
         int sumWellDepths = 0;
-        top = modifiedState.getTop();
         for (int col = 1; col < top.length - 1; col++) {
             if (top[col - 1] > top[col] && top[col] < top[col + 1]) {
-                int depth = Math.min(top[col-1] - top[col], top[col+1] - top[col]);
-                sumWellDepths += depth;
+                int depth = Math.min(top[col - 1] - top[col], top[col + 1] - top[col]);
+                int arithSeries = (depth * (depth+1)) / 2;
+                sumWellDepths += arithSeries;
             }
         }
 
         // check left- and right-most column, treating the wall as block of maxHeight.
         if (top[0] < top[1]) {
-            sumWellDepths += top[1] - top[0];
+            int depth = top[1] - top[0];
+            int arithSeries = (depth * (depth+1)) / 2;
+            sumWellDepths += arithSeries;
         }
 
         if (top[top.length - 1] < top[top.length - 2]) {
-            sumWellDepths += (top[top.length - 2] - top[top.length - 1]);
+            int depth = (top[top.length - 2] - top[top.length - 1]);
+            int arithSeries = (depth * (depth+1)) / 2;
+            sumWellDepths += arithSeries;
         }
 
         features[INDEX_CUMULATIVE_WELLS] = sumWellDepths;
