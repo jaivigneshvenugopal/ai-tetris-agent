@@ -1,37 +1,37 @@
 import java.util.Scanner;
 
 public class PlayerSkeleton {
-
 	// another State object to simulate the moves before actually playing
-	protected StateSimulator sim;
+	protected StateSimulator2 sim;
 	private double[] weights;
-	private static final boolean DEBUG_FEATURES = true;
 
+	private static final boolean DEBUG_FEATURES = false;
 	private static Scanner sc = new Scanner(System.in);
 
 	public PlayerSkeleton() {
-			sim = new StateSimulator();
+		sim = new StateSimulator2();
 	}
 
 	//implement this function to have a working system
 	public int pickMove(State s, int[][] legalMoves) {
-		int moveToPlay = getBestMoveBySimulation(s, legalMoves.length);
-		this.sim.makeMove(moveToPlay); // update it since you do end up making this move
-		this.sim.markSimulationDoneWithCurrentPiece();
-		return moveToPlay;
+		int bestMove = getBestMoveBySimulation(s, legalMoves.length);
+		if (DEBUG_FEATURES) {
+			sim.copyState(s);
+			sim.makeMove(bestMove);
+		}
+		return bestMove;
 	}
 
 	/**
 	 * @param actualState the actual state with which the game runs
-	 * @param moveChoices the legal moves allowed
+	 * @param numMoves the legal moves allowed
 	 * @return the best move
 	 */
-	private int getBestMoveBySimulation(State actualState, int moveChoices) {
+	private int getBestMoveBySimulation(State actualState, int numMoves) {
 		int bestMove = 0;
 		double bestUtility = Double.NEGATIVE_INFINITY;
-		sim.setNextPiece(actualState.nextPiece); // synchronize the next piece
-		for (int currentMove = 0; currentMove < moveChoices; currentMove++) {
-			double currentUtility = getUtility(sim, currentMove);
+		for (int currentMove = 0; currentMove < numMoves; currentMove++) {
+			double currentUtility = getUtility(actualState, currentMove);
 			if (currentUtility > bestUtility) {
 				bestMove = currentMove;
 				bestUtility = currentUtility;
@@ -39,12 +39,13 @@ public class PlayerSkeleton {
 		}
 		return bestMove;
 	}
-	
+
 	public static void main(String[] args) {
 		State state = new State();
 		new TFrame(state);
 		PlayerSkeleton p = new PlayerSkeleton();
-		double[] sampleWeight = {-0.01, -0.02, -0.03, -0.05, -0.3, -0.1, -0.3, -0.5};
+//		double[] sampleWeight = { -0.48008527 , -0.49894161 , 0.00503425 , -0.44941832 , -0.01327127 , -0.34682286 , -0.09494767 , -0.43485164 };
+		double[] sampleWeight = { -0.66815299 , -0.18275129 , -0.00313774 , -0.61375989 , -0.10106387 , -0.26484914 , -0.09336810 , -0.23320790 };
 		p.setWeights(sampleWeight);
 
 		while(!state.hasLost()) {
@@ -64,7 +65,7 @@ public class PlayerSkeleton {
 //				}
 			}
 		}
-		System.out.println("You have completed "+state.getRowsCleared()+" rows.");
+		System.out.println("You have completed " + state.getRowsCleared() + " rows.");
 		System.exit(0);
 	}
 
@@ -72,39 +73,39 @@ public class PlayerSkeleton {
 		this.weights = weights;
 	}
 
-	private double getUtility(StateSimulator s, int move) {
+	private double getUtility(State s, int move) {
 		if (this.weights == null) {
 			System.out.println("PlayerSkeleton: Weight array is not set. Exiting");
 			System.exit(1);
 		}
 
+		sim.copyState(s);
 		sim.makeMove(move);
 		if (sim.hasLost()) {
-			sim.resetMove();
 			return Double.NEGATIVE_INFINITY;
 		}
 
-		int[] features = s.getFeaturesArray();
+		int[] features = sim.getFeaturesArray();
 
 		double utility = 0;
-		for (int i = 0; i < StateSimulator.NUM_FEATURES; i++){
+		for (int i = 0; i < StateSimulator2.NUM_FEATURES; i++){
+			// get linear weighted sum
 			utility += features[i] * weights[i];
 		}
 
-		sim.resetMove();
 		return utility;
 	}
 
 	private static void printFeatures(int[] features) {
 		System.out.println("--------------------------------------------------");
-		System.out.println("#holes = " + 			features[StateSimulator.INDEX_NUMHOLES]);
-		System.out.println("Col Transition = " + 	features[StateSimulator.INDEX_COL_TRANSITIONS]);
-		System.out.println("Row Transition = " + 	features[StateSimulator.INDEX_ROW_TRANSITIONS]);
-		System.out.println("holes depth = " + 		features[StateSimulator.INDEX_HOLE_DEPTH]);
-		System.out.println("Cumulative well = " + 	features[StateSimulator.INDEX_CUMULATIVE_WELLS]);
-		System.out.println("Landing height = " + 	features[StateSimulator.INDEX_LANDING_HEIGHT]);
-		System.out.println("#rows with hole = " +	features[StateSimulator.INDEX_NUM_ROWS_WITH_HOLE]);
-		System.out.println("Eroded piece cells " +  features[StateSimulator.INDEX_ERODED_PIECE_CELLS]);
+		System.out.println("#holes = " + 			features[StateSimulator2.INDEX_NUMHOLES]);
+		System.out.println("Col Transition = " + 	features[StateSimulator2.INDEX_COL_TRANSITIONS]);
+		System.out.println("Row Transition = " + 	features[StateSimulator2.INDEX_ROW_TRANSITIONS]);
+		System.out.println("holes depth = " + 		features[StateSimulator2.INDEX_HOLE_DEPTH]);
+		System.out.println("Cumulative well = " + 	features[StateSimulator2.INDEX_CUMULATIVE_WELLS]);
+		System.out.println("Landing height = " + 	features[StateSimulator2.INDEX_LANDING_HEIGHT]);
+		System.out.println("#rows with hole = " +	features[StateSimulator2.INDEX_NUM_ROWS_WITH_HOLE]);
+		System.out.println("Eroded piece cells " +  features[StateSimulator2.INDEX_ERODED_PIECE_CELLS]);
 		System.out.println("--------------------------------------------------");
 	}
 }
