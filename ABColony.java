@@ -20,9 +20,8 @@ public class ABColony {
      * 1. employee bees
      * 2. onlooker bees
      * 3. scout bee (limited to only 1)
-     * 50 is obtained from research
      */
-    public static final int COLONY_SIZE = 80;
+    public static final int COLONY_SIZE = 100;
 
     /**
      * Since half the colony are employee bees, this is equal to half the colony size.
@@ -32,7 +31,7 @@ public class ABColony {
     /**
      * The number of trials we allow till a food source can be improved. 50 is obtained from research
      */
-    public static final int LIMIT = 20;
+    public static final int LIMIT = 50;
 
     /**
      * The number of cycles for foraging (i.e. till stopping the algorithm). 500 is obtained from research
@@ -65,9 +64,6 @@ public class ABColony {
     private double[] trialCounts = new double[NUM_FOOD_SOURCE];
 
     private int foodSourceToAbandon  = -1;
-
-    private double localBestFitness = Double.NEGATIVE_INFINITY;
-    private double[] localBestParameters = new double[NUM_PARAMETERS];
 
     /**
      * This is the constant that defines the rand() range for the update in g-best algorithm.
@@ -106,26 +102,28 @@ public class ABColony {
     }
 
     public static void main(String[] args) throws IOException {
-        ABColony colony = new ABColony();
-        colony.initializeFoodSources();
-        colony.memorizeBestSource();
-        printResult(colony);
-        PlayGame.setLevel(3);
-        for (int i = 1; i < MAX_CYCLE; i++) {
-            colony.sendEmployedBees();
-            colony.sendOnlookerBees();
+        for (int count = 0; count < 5; count++) {
+            ABColony colony = new ABColony();
+            colony.initializeFoodSources();
             colony.memorizeBestSource();
-            colony.sendScoutBees();
-            if (i % 10 == 0) {
-                System.out.println("Iteration #" + i);
-                printResult(colony);
+            printResult(colony);
+            PlayGame.setLevel(2);
+            for (int i = 1; i < MAX_CYCLE; i++) {
+                colony.sendEmployedBees();
+                colony.sendOnlookerBees();
+                colony.memorizeBestSource();
+                colony.sendScoutBees();
+                if (i % 10 == 0) {
+                    System.out.println("Iteration #" + i);
+                    printResult(colony);
+                }
             }
-        }
 
-        colony.es.shutdown();
+            colony.es.shutdown();
 
-        if (WEIGHTS_RESULT_FILE != null) {
-            writeOptimalWeightsToFile(colony);
+            if (WEIGHTS_RESULT_FILE != null) {
+                writeOptimalWeightsToFile(colony);
+            }
         }
         System.exit(0);
     }
@@ -171,12 +169,6 @@ public class ABColony {
                 globalBestFitness = fitness[i];
                 System.arraycopy(foods[i], 0, globalBestParameters, 0, NUM_PARAMETERS);
             }
-
-//            localBestFitness = 0;
-//            if (fitness[i] > localBestFitness) {
-//                localBestFitness = fitness[i];
-//                System.arraycopy(foods[i], 0, localBestParameters, 0, NUM_PARAMETERS);
-//            }
         }
     }
 

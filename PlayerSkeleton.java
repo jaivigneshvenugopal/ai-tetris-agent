@@ -44,7 +44,6 @@ public class PlayerSkeleton {
 		State state = new State();
 		new TFrame(state);
 		PlayerSkeleton p = new PlayerSkeleton();
-//		double[] sampleWeight = { -0.48008527 , -0.49894161 , 0.00503425 , -0.44941832 , -0.01327127 , -0.34682286 , -0.09494767 , -0.43485164 };
 		double[] sampleWeight = { -0.66815299 , -0.18275129 , -0.00313774 , -0.61375989 , -0.10106387 , -0.26484914 , -0.09336810 , -0.23320790 };
 		p.setWeights(sampleWeight);
 
@@ -57,12 +56,6 @@ public class PlayerSkeleton {
 				printFeatures(p.sim.getFeaturesArray());
 				System.out.println("Press ENTER to apply next move");
 				sc.nextLine();
-			} else {
-//				try {
-//					Thread.sleep(300);
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
 			}
 		}
 		System.out.println("You have completed " + state.getRowsCleared() + " rows.");

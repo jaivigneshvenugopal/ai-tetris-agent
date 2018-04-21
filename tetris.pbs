@@ -1,0 +1,17 @@
+#!/bin/bash
+#PBS -q normal
+#PBS -l select=1:ncpus=20:mem=8G
+#PBS -l walltime=24:00:00
+#PBS -P Personal
+#PBS -N Tetris
+
+# This is a bash script to be submitted to NSCC queues.
+# Make sure to have a pre-compiled Java class files in the directory specified below, and run the command
+# qsub tetris.pbs
+# to submit the job.
+
+echo "Starting the game now"
+PATH_OUT="$PBS_O_WORKDIR/out/production/Tetris-Agent"
+cd $PATH_OUT
+echo "In directory $PATH_OUT. Starting the algorithm... See you soon"
+/app/java/jdk1.8.0_91/jre/bin/java ABColony

@@ -1,4 +1,10 @@
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -10,31 +16,75 @@ public class TestWeights {
     private static int NUM_THREADS;
     private static ExecutorService es;
     private static ArrayList<Callable<Double>> tasks;
-    private static int NUM_GAMES_TO_PLAY = 50;
+    private static int NUM_GAMES_TO_PLAY = 80;
 
-    // set the weights to test here!
-    private static double[] weights = { -0.66815299 , -0.18275129 , -0.00313774 , -0.61375989 , -0.10106387 , -0.26484914 , -0.09336810 , -0.23320790 };
+    private static String WEIGHTS_FILE = "weights.out";
 
-    public static void main (String[] args) throws InterruptedException, ExecutionException {
+    private static double[] scores = new double[NUM_GAMES_TO_PLAY];
+
+    public static void main (String[] args) throws InterruptedException, ExecutionException, IOException {
         NUM_THREADS = Runtime.getRuntime().availableProcessors();
+
         System.out.println("# processors available = " + NUM_THREADS);
         es = Executors.newFixedThreadPool(NUM_THREADS);
 
-        PlayGame.NUM_GAMES_TO_AVERAGE = 1; // only run one game per thread since we are running each game concurrently
-        PlayGame.setLevel(1); // usual difficulty
+        PlayGame.NUM_GAMES_TO_AVERAGE = 1;
+        PlayGame.setLevel(1);
 
+        ArrayList<double[]> weightsFromFile = getWeightsFromFile();
+        for (double[] weight: weightsFromFile) {
+            runGameWith(weight);
+        }
+
+        System.exit(0);
+    }
+
+    private static void runGameWith(double[] weights) throws InterruptedException, ExecutionException {
         tasks = new ArrayList<>(NUM_GAMES_TO_PLAY);
-
+        double currentTime = System.currentTimeMillis();
         for (int i = 0; i < NUM_GAMES_TO_PLAY; i++)
             tasks.add(new PlayGame(weights));
 
-        double average = 0;
         List<Future<Double>> results = es.invokeAll(tasks);
+        int i = 0;
         for (Future<Double> result: results) {
-            average += result.get();
+            scores[i] = result.get();
+            i++;
         }
 
-        Debug.printRed("Average score = " + average / NUM_GAMES_TO_PLAY + " over " + NUM_GAMES_TO_PLAY + " games");
-        System.exit(0);
+        double endTime = System.currentTimeMillis();
+
+        Arrays.sort(scores);
+        double average = 0;
+        for (double score: scores) {
+            System.out.printf("%.3f\n", score);
+            average += score;
+        }
+
+        double timeTaken = endTime - currentTime;
+        System.out.printf("\nTime taken = %.5f seconds", timeTaken / 1000);
+        average /= NUM_GAMES_TO_PLAY;
+        System.out.println();
+        System.out.println("Average = " + average);
+    }
+
+    private static ArrayList<double[]> getWeightsFromFile() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(WEIGHTS_FILE));
+        String line;
+        int count = 0;
+        ArrayList<double[]> weights = new ArrayList<>();
+        while ((line = br.readLine()) != null) {
+            double[] weight = new double[StateSimulator2.NUM_FEATURES];
+            String[] elements = line.split(",");
+            for (int i = 0; i < StateSimulator2.NUM_FEATURES; i++) {
+                weight[i] = Double.parseDouble(elements[i].trim());
+                System.out.printf("%.5f ", weight[i]);
+            }
+            System.out.println();
+            weights.add(weight);
+            count++;
+        }
+        System.out.printf("Testing %d weights\n", count);
+        return weights;
     }
 }
