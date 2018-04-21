@@ -110,7 +110,7 @@ public class ABColony {
         colony.initializeFoodSources();
         colony.memorizeBestSource();
         printResult(colony);
-        PlayGame.setLevel(3);
+        PlayGame.setLevel(2);
         for (int i = 1; i < MAX_CYCLE; i++) {
             colony.sendEmployedBees();
             colony.sendOnlookerBees();

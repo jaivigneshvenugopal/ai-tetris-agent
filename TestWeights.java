@@ -1,4 +1,6 @@
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -13,15 +15,19 @@ public class TestWeights {
     private static int NUM_GAMES_TO_PLAY = 50;
 
     // set the weights to test here!
-    private static double[] weights = { -0.66815299 , -0.18275129 , -0.00313774 , -0.61375989 , -0.10106387 , -0.26484914 , -0.09336810 , -0.23320790 };
+    private static double[] weights = {-0.55745977 , -0.15183443 , -0.00066615 , -0.73491890 , -0.12130472 , -0.23872920 , -0.07200741 , -0.22178176};
 
     public static void main (String[] args) throws InterruptedException, ExecutionException {
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
+
         NUM_THREADS = Runtime.getRuntime().availableProcessors();
         System.out.println("# processors available = " + NUM_THREADS);
+        System.out.println("Start Time: " + formatter.format(date));
         es = Executors.newFixedThreadPool(NUM_THREADS);
 
         PlayGame.NUM_GAMES_TO_AVERAGE = 1; // only run one game per thread since we are running each game concurrently
-        PlayGame.setLevel(1); // usual difficulty
+        PlayGame.setLevel(2); // usual difficulty
 
         tasks = new ArrayList<>(NUM_GAMES_TO_PLAY);
 
@@ -35,6 +41,7 @@ public class TestWeights {
         }
 
         Debug.printRed("Average score = " + average / NUM_GAMES_TO_PLAY + " over " + NUM_GAMES_TO_PLAY + " games");
+        System.out.println("End Time: " + formatter.format(date));
         System.exit(0);
     }
 }
