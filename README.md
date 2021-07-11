@@ -1,3 +1,5 @@
+<img width="125" src="/assets/img/tetris/tetris.png">
+
 ### Introduction 
 The AI Tetris Agent essentially is a computer program that plays the game [Tetris](https://en.wikipedia.org/wiki/Tetris) without any human aid. The goal of the program is to simply clear as many lines as possible - in this case, the agent clears 5 million lines per game on average.      
         
