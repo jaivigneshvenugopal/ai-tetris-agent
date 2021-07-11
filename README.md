@@ -19,7 +19,8 @@ AI Tetris Agent is available for the Linux, Windows, and Mac OS operating system
 ### Understanding the Problem   
  The rules of the game are fairly straightforward. A piece slowly descends from the top and the player is supposed to tactically place it in a position such that it aligns perfectly with the other resting pieces - block of lines or a singular line disappears every time this happens and points are earned. The player is allowed to rotate the falling pieces to his liking before proceeding to place it.      
   
-<img src="/assets/img/tetris/tetris2.png">  
+<img src="/assets/img/tetris/tetris2.png">
+
 [Picture [credits](https://ntnuopen.ntnu.no/ntnu-xmlui/bitstream/handle/11250/253727/751065_FULLTEXT01.pdf?sequence=2&isAllowed=y)]  
   
 For an AI to perform this task similarly - and well - it has to firstly know in which orientation it should place the piece and precisely in what column its final destination should be. Neither the human or the AI could look into the future to determine what the next piece will be. One can only decide on what to do with the current piece at the moment it appears. As long as this is done well, the game could be beaten with a very high score (in the range of millions).  
